@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Compliance | SOC 2 & ISO 27001 Auditor</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-white font-sans">
+    <nav class="max-w-6xl mx-auto p-6 flex justify-between items-center">
+        <h1 class="text-xl font-bold tracking-wider text-teal-400">🛡️ COMPLIANCE.IO</h1>
+        <a href="/dashboard" class="bg-slate-800 hover:bg-slate-700 text-sm px-4 py-2 rounded-lg transition">Ir al Dashboard</a>
+    </nav>
+
+    <main class="max-w-4xl mx-auto text-center mt-20 px-4">
+        <span class="text-teal-400 text-sm font-semibold uppercase tracking-widest block mb-3">Mes 3: Lanzamiento Estratégico</span>
+        <h2 class="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">Automatizá la recolección de evidencia para tus auditorías</h2>
+        <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-12">Pasá tus certificaciones SOC 2 o ISO 27001 en la mitad del tiempo. Conectá tus APIs de nube de forma segura con cifrado AES-256.</p>
+
+        <div class="bg-slate-800 p-8 rounded-2xl max-w-md mx-auto shadow-2xl border border-slate-700 text-left">
+            <h3 class="text-lg font-bold mb-2 text-teal-400">Escáner de Cumplimiento Gratuito</h3>
+            <p class="text-sm text-slate-400 mb-6">Ingresá el nombre de tu organización para auditar tus buckets S3 y generar tu reporte instantáneo.</p>
+            
+            <form id="scanForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Nombre de la Empresa</label>
+                    <input type="text" id="companyName" required placeholder="Ej. Startup S.A." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
+                </div>
+                <button type="submit" id="btnScan" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold p-3 rounded-lg transition duration-200 text-sm cursor-pointer">
+                    Escanear y Descargar Reporte (PDF)
+                </button>
+            </form>
+            <p id="statusMsg" class="mt-4 text-xs text-center font-medium hidden"></p>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('scanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const company = document.getElementById('companyName').value;
+            const btn = document.getElementById('btnScan');
+            const status = document.getElementById('statusMsg');
+
+            btn.disabled = true;
+            status.classList.remove('hidden');
+            status.className = "mt-4 text-xs text-center text-teal-400 animate-pulse";
+            status.innerText = "Conectando con la API de nube y escaneando recursos...";
+
+            try {
+                const response = await fetch('/api/compliance/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cliente_nombre: company })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `reporte_compliance_${company}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    status.className = "mt-4 text-xs text-center text-emerald-400";
+                    status.innerText = "✅ Reporte generado y descargado con éxito.";
+                } else {
+                    const err = await response.json();
+                    status.className = "mt-4 text-xs text-center text-rose-400";
+                    status.innerText = `❌ Error: ${err.detail || 'Fallo interno.'}`;
+                }
+            } catch (error) {
+                status.className = "mt-4 text-xs text-center text-rose-400";
+                status.innerText = "❌ Error de conexión con el backend.";
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
