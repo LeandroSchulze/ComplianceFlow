@@ -33,7 +33,8 @@ class AuthManager:
             
         if resultado:
             totp = pyotp.TOTP(resultado[0])
-            if totp.verify(codigo_ingresado):
+            # valid_window=1 le da 30 segundos de tolerancia antes y después al reloj del servidor
+            if totp.verify(codigo_ingresado, valid_window=1):
                 registrar_evento(f"MFA verificado para: {email}")
                 return True
         return False
