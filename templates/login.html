@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | ComplianceFlow</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-white font-sans flex items-center justify-center h-screen px-4">
+
+    <div class="bg-slate-800 p-8 rounded-2xl max-w-sm w-full shadow-2xl border border-slate-700">
+        <div class="text-center mb-8">
+            <h1 class="text-xl font-bold tracking-wider text-teal-400">🛡️ COMPLIANCEFLOW</h1>
+            <p class="text-xs text-slate-400 mt-2">Ingresá a tu panel de monitoreo continuo</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Correo Electrónico</label>
+                <input type="email" id="email" required placeholder="tu@empresa.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
+            </div>
+            
+            <div>
+                <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Contraseña</label>
+                <input type="password" id="password" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
+            </div>
+
+            <div id="mfaField" class="hidden animate-fade-in">
+                <label class="block text-xs uppercase font-semibold text-amber-400 mb-1">Código de Seguridad (MFA)</label>
+                <input type="text" id="mfaToken" placeholder="Ej. 123456" class="w-full bg-slate-900 border border-amber-500 rounded-lg p-3 text-white focus:outline-none text-sm tracking-widest text-center font-mono">
+            </div>
+
+            <button type="submit" id="btnLogin" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold p-3 rounded-lg transition duration-200 text-sm cursor-pointer mt-2">
+                Ingresar a la plataforma
+            </button>
+        </form>
+        
+        <p id="errorMsg" class="mt-4 text-xs text-center text-rose-400 font-medium hidden"></p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            errorMsg.classList.add('hidden');
+
+            try {
+                // Simulación de envío a tu API de autenticación
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                if (response.ok) {
+                    // Si todo está ok, redirige directo al Dashboard divino
+                    window.location.href = "/dashboard";
+                } else {
+                    const err = await response.json();
+                    errorMsg.classList.remove('hidden');
+                    errorMsg.innerText = `❌ ${err.detail || 'Credenciales inválidas.'}`;
+                }
+            } catch (error) {
+                errorMsg.classList.remove('hidden');
+                errorMsg.innerText = "❌ Error de conexión con el servidor.";
+            }
+        });
+    </script>
+</body>
+</html>
