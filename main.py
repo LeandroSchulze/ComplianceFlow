@@ -12,6 +12,7 @@ from reporter import ReportGenerator
 from auth import AuthManager
 from legal_config import LegalShield
 from security import registrar_evento
+from fastapi.responses import HTMLResponse
 
 load_dotenv()
 
@@ -46,6 +47,10 @@ def dashboard():
     """Sirve el Panel de Control Técnico"""
     return FileResponse("templates/dashboard.html")
 
+@app.get("/login", response_class=HTMLResponse)
+async def mostrar_login(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+    
 # --- ENDPOINTS DE BLINDAJE LEGAL ---
 @app.get("/api/legal/terms", tags=["Legal"])
 def obtener_terminos():
