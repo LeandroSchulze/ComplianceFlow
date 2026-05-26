@@ -32,3 +32,8 @@ class AuthManager:
             resultado = cursor.fetchone()
             
         if resultado:
+            totp = pyotp.TOTP(resultado[0])
+            if totp.verify(codigo_ingresado):
+                registrar_evento(f"MFA verificado para: {email}")
+                return True
+        return False
