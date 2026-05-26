@@ -3,69 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión | ComplianceFlow</title>
+    <title>Acceso | ComplianceFlow</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-slate-900 text-white font-sans flex items-center justify-center h-screen px-4">
 
-    <div class="bg-slate-800 p-8 rounded-2xl max-w-sm w-full shadow-2xl border border-slate-700">
-        <div class="text-center mb-8">
+    <div class="bg-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl border border-slate-700">
+        <div class="text-center mb-6">
             <h1 class="text-xl font-bold tracking-wider text-teal-400">🛡️ COMPLIANCEFLOW</h1>
-            <p class="text-xs text-slate-400 mt-2">Ingresá a tu panel de monitoreo continuo</p>
+            <p class="text-xs text-slate-400 mt-2">Gestión de acceso e infraestructura segura</p>
+        </div>
+
+        <div class="flex border-b border-slate-700 mb-6 text-sm">
+            <button id="tabLogin" class="flex-1 pb-2 font-semibold text-teal-400 border-b-2 border-teal-400 focus:outline-none cursor-pointer" onclick="switchTab('login')">
+                Iniciar Sesión
+            </button>
+            <button id="tabRegister" class="flex-1 pb-2 font-semibold text-slate-400 focus:outline-none cursor-pointer" onclick="switchTab('register')">
+                Crear Cuenta
+            </button>
         </div>
 
         <form id="loginForm" class="space-y-4">
             <div>
                 <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Correo Electrónico</label>
-                <input type="email" id="email" required placeholder="tu@empresa.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
+                <input type="email" id="loginEmail" required placeholder="tu@empresa.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
             </div>
-            
             <div>
-                <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Contraseña</label>
-                <input type="password" id="password" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
-            </div>
-
-            <div id="mfaField" class="hidden animate-fade-in">
                 <label class="block text-xs uppercase font-semibold text-amber-400 mb-1">Código de Seguridad (MFA)</label>
-                <input type="text" id="mfaToken" placeholder="Ej. 123456" class="w-full bg-slate-900 border border-amber-500 rounded-lg p-3 text-white focus:outline-none text-sm tracking-widest text-center font-mono">
+                <input type="text" id="loginMfa" required placeholder="Ej. 123456" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm text-center font-mono tracking-widest">
+                <span class="text-[10px] text-slate-500 block mt-1">Ingresá el token de 6 dígitos de tu app de autenticación.</span>
             </div>
-
-            <button type="submit" id="btnLogin" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold p-3 rounded-lg transition duration-200 text-sm cursor-pointer mt-2">
-                Ingresar a la plataforma
+            <button type="submit" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold p-3 rounded-lg transition duration-200 text-sm cursor-pointer font-semibold">
+                Ingresar al Dashboard
             </button>
         </form>
+
+        <form id="registerForm" class="space-y-4 hidden">
+            <div>
+                <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Correo Electrónico</label>
+                <input type="email" id="regEmail" required placeholder="ceo@tuempresa.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Contraseña</label>
+                <input type="password" id="regPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
+            </div>
+            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold p-3 rounded-lg transition duration-200 text-sm cursor-pointer font-semibold">
+                Registrar nueva cuenta
+            </button>
+        </form>
+
+        <div id="mfaSuccessBlock" class="mt-6 bg-slate-900 p-4 rounded-xl border border-emerald-500 hidden animate-fade-in">
+            <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">¡Registro Exitoso!</h4>
+            <p class="text-xs text-slate-300 mb-3">Escaneá o agregá esta clave en Google Authenticator / Authy para poder iniciar sesión:</p>
+            <div id="mfaKeyDisplay" class="bg-slate-950 p-3 rounded border border-slate-800 font-mono text-center text-sm text-amber-400 select-all tracking-wider"></div>
+            <button class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 py-2 rounded-lg transition cursor-pointer" onclick="switchTab('login')">
+                ← Ir a iniciar sesión con mi código
+            </button>
+        </div>
         
-        <p id="errorMsg" class="mt-4 text-xs text-center text-rose-400 font-medium hidden"></p>
+        <p id="feedbackMsg" class="mt-4 text-xs text-center font-medium hidden"></p>
     </div>
 
     <script>
+        // Alternar entre pestañas Login / Registro
+        function switchTab(type) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegister = document.getElementById('tabRegister');
+            const mfaBlock = document.getElementById('mfaSuccessBlock');
+            const feedback = document.getElementById('feedbackMsg');
+
+            feedback.classList.add('hidden');
+
+            if (type === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                mfaBlock.classList.add('hidden');
+                tabLogin.className = "flex-1 pb-2 font-semibold text-teal-400 border-b-2 border-teal-400 focus:outline-none cursor-pointer";
+                tabRegister.className = "flex-1 pb-2 font-semibold text-slate-400 focus:outline-none cursor-pointer";
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                tabLogin.className = "flex-1 pb-2 font-semibold text-slate-400 focus:outline-none cursor-pointer";
+                tabRegister.className = "flex-1 pb-2 font-semibold text-blue-400 border-b-2 border-blue-400 focus:outline-none cursor-pointer";
+            }
+        }
+
+        // Procesar Inicio de Sesión (Email + Código MFA)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMsg');
-            
-            errorMsg.classList.add('hidden');
+            const email = document.getElementById('loginEmail').value;
+            const token = document.getElementById('loginMfa').value;
+            const feedback = document.getElementById('feedbackMsg');
+
+            feedback.classList.add('hidden');
 
             try {
-                // Simulación de envío a tu API de autenticación
                 const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, codigo_mfa: token })
+                });
+
+                if (response.ok) {
+                    window.location.href = "/dashboard";
+                } else {
+                    const err = await response.json();
+                    feedback.className = "mt-4 text-xs text-center text-rose-400";
+                    feedback.innerText = `❌ ${err.detail || 'Código o usuario incorrecto.'}`;
+                    feedback.classList.remove('hidden');
+                }
+            } catch (error) {
+                feedback.className = "mt-4 text-xs text-center text-rose-400";
+                feedback.innerText = "❌ Error al conectar con el backend.";
+                feedback.classList.remove('hidden');
+            }
+        });
+
+        // Procesar Registro (Email + Password)
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const feedback = document.getElementById('feedbackMsg');
+            const mfaBlock = document.getElementById('mfaSuccessBlock');
+            const mfaKey = document.getElementById('mfaKeyDisplay');
+
+            feedback.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email, password: password })
                 });
 
                 if (response.ok) {
-                    // Si todo está ok, redirige directo al Dashboard divino
-                    window.location.href = "/dashboard";
+                    const data = await response.json();
+                    document.getElementById('registerForm').classList.add('hidden');
+                    mfaKey.innerText = data.mfa_secret;
+                    mfaBlock.classList.remove('hidden');
                 } else {
                     const err = await response.json();
-                    errorMsg.classList.remove('hidden');
-                    errorMsg.innerText = `❌ ${err.detail || 'Credenciales inválidas.'}`;
+                    feedback.className = "mt-4 text-xs text-center text-rose-400";
+                    feedback.innerText = `❌ ${err.detail || 'Error en el registro.'}`;
+                    feedback.classList.remove('hidden');
                 }
             } catch (error) {
-                errorMsg.classList.remove('hidden');
-                errorMsg.innerText = "❌ Error de conexión con el servidor.";
+                feedback.className = "mt-4 text-xs text-center text-rose-400";
+                feedback.innerText = "❌ Error de conexión.";
+                feedback.classList.remove('hidden');
             }
         });
     </script>
