@@ -108,11 +108,8 @@
 
     <script>
         async function descargarEvidencia(formato, docId) {
-            // Endpoint conceptual listo para pegarle a tu backend
-            alert(`🚀 Procesando generación dinámica en formato: ${formato.toUpperCase()}\nDocumento solicitado: ${docId}\nEl archivo se compilará en memoria y se descargará automáticamente.`);
-            
-            // Más tarde implementaremos el fetch real:
-            // window.location.href = `/api/compliance/download?format=${formato}&id=${docId}`;
+            // Dispara la descarga llamando directo al endpoint de FastAPI
+            window.location.href = `/api/compliance/download?format=${formato}&id=${docId}`;
         }
     </script>
 </body>
