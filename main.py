@@ -128,7 +128,10 @@ def registrar(usuario: UserRegister):
 
 @app.post("/api/auth/login", tags=["Autenticación"])
 def login(usuario: UserLogin):
-    es_valido = auth_handler.verificar_mfa(usuario.email, usuario.codigo_mfa)
+    # Limpiamos espacios o guiones por si el usuario ingresó "123 456" o "123-456"
+    codigo_limpio = usuario.codigo_mfa.replace(" ", "").replace("-", "").strip()
+    
+    es_valido = auth_handler.verificar_mfa(usuario.email, codigo_limpio)
     if not es_valido:
         raise HTTPException(status_code=401, detail="Código MFA inválido o expirado.")
     return {"mensaje": "Acceso concedido"}
