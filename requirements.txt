@@ -7,3 +7,4 @@ python-dotenv
 fpdf
 pyotp
 python-docx
+psycopg2-binary
