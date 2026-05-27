@@ -1,7 +1,7 @@
 # reporter.py
 import os
 from datetime import datetime
-from reportlab.lib.pagesizes import a4
+from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -24,13 +24,13 @@ class ReportGenerator:
         # Dimensiones de página A4 con márgenes limpios de 20mm
         doc = SimpleDocTemplate(
             output_filename,
-            pagesize=a4,
+            pagesize=A4,
             rightMargin=54, leftMargin=54,
             topMargin=54, bottomMargin=54
         )
         
         # Calcular ancho útil de la página de forma dinámica
-        ancho_util = a4[0] - 108 
+        ancho_util = A4[0] - 108 
         
         styles = getSampleStyleSheet()
         
