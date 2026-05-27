@@ -88,7 +88,7 @@ DATA_ESTANDARES = {
 def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     doc = Document()
     
-    # Configuración de márgenes premium
+    # Configuración de márgenes institucionales (1 pulgada por lado)
     for section in doc.sections:
         section.top_margin = Inches(1)
         section.bottom_margin = Inches(1)
@@ -96,24 +96,64 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
         section.right_margin = Inches(1)
 
     info = DATA_ESTANDARES.get(doc_id, {
-        "norma": "Estándar Corporativo", "titulo": "Reporte Técnico", "evidencia_id": "EV-GEN", "estado": "🟢 VERIFICADO", "detalle": "Análisis completado."
+        "norma": "Estándar Corporativo", "titulo": "Reporte Técnico", "evidencia_id": "EV-GEN", "estado": "VERIFICADO", "detalle": "Análisis completado."
     })
 
-    # --- BANNER / LOGO CORPORATIVO IMPACTANTE EN WORD ---
-    tabla_logo = doc.add_table(rows=1, cols=1)
-    tabla_logo.style = 'Light Shading Accent 1' # Aplica un fondo estilizado nativo de Word
-    celda = tabla_logo.cell(0, 0)
-    p_logo = celda.paragraphs[0]
-    run_l = p_logo.add_run("🛡️ COMPLIANCEFLOW PREMIUM SUITE — EVIDENCIA AUTOMÁTICA")
-    run_l.font.name = 'Arial'
-    run_l.font.size = Pt(11)
-    run_l.font.bold = True
+    # =========================================================================
+    # LOGO Y CABECERA PREMIUM (CONSTRUCCIÓN NATIVA)
+    # =========================================================================
+    # Creamos una estructura de tabla de 1 fila x 2 columnas para el branding
+    header_table = doc.add_table(rows=1, cols=2)
+    header_table.autofit = False
+    header_table.columns[0].width = Inches(4.5)
+    header_table.columns[1].width = Inches(2.0)
     
-    # Espaciado divisorio
-    doc.add_paragraph("\n")
+    # Columna Izquierda: Isotipo y Nombre de la App
+    cell_left = header_table.cell(0, 0)
+    p_logo = cell_left.paragraphs[0]
+    run_icon = p_logo.add_run("🛡️  ")
+    run_icon.font.size = Pt(20)
     
-    # Título del Marco
-    doc.add_heading(f"Marco Regulatorio: {info['norma']}", level=1)
+    run_brand = p_logo.add_run("ComplianceFlow")
+    run_brand.font.name = 'Arial'
+    run_brand.font.size = Pt(16)
+    run_brand.font.bold = True
+    run_brand.font.color.rgb = docx.shared.RGBColor(15, 23, 42) # Azul Marino Oscuro
+    
+    p_sub_logo = cell_left.add_paragraph()
+    run_sub_logo = p_sub_logo.add_run("AUTOMATED B2B COMPLIANCE SUITE")
+    run_sub_logo.font.name = 'Arial'
+    run_sub_logo.font.size = Pt(7.5)
+    run_sub_logo.font.bold = True
+    run_sub_logo.font.color.rgb = docx.shared.RGBColor(20, 184, 166) # Color Teal / Turquesa
+    
+    # Columna Derecha: Sello de Seguridad de la Base de Datos
+    cell_right = header_table.cell(0, 1)
+    p_secure = cell_right.paragraphs[0]
+    p_secure.alignment = 2 # Alineación a la derecha
+    run_sec_txt = p_secure.add_run("SECURE RECORD\n")
+    run_sec_txt.font.size = Pt(8)
+    run_sec_txt.font.bold = True
+    run_sec_txt.font.color.rgb = docx.shared.RGBColor(16, 185, 129) # Verde esmeralda
+    
+    run_db_txt = p_secure.add_run("PostgreSQL Verified")
+    run_db_txt.font.size = Pt(8)
+    run_db_txt.font.italic = True
+    
+    # Línea divisoria elegante
+    p_line = doc.add_paragraph()
+    run_line = p_line.add_run("_______________________________________________________________________")
+    run_line.font.color.rgb = docx.shared.RGBColor(203, 213, 225)
+    run_line.font.size = Pt(10)
+    
+    doc.add_paragraph("\n") # Espaciador
+    # =========================================================================
+
+    # Título del Marco Regulatorio
+    h_norma = doc.add_heading(level=1)
+    run_norma = h_norma.add_run(f"Marco Regulatorio: {info['norma']}")
+    run_norma.font.name = 'Arial'
+    run_norma.font.color.rgb = docx.shared.RGBColor(15, 23, 42)
     
     # Tabla de Metadatos del Auditor
     doc.add_heading("1. Metadatos de Control de la Auditoría", level=2)
@@ -126,18 +166,19 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     p_meta.add_run(f"{info['estado']}\n")
     p_meta.add_run("Fecha de Evaluación: ").bold = True
     p_meta.add_run(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC\n")
-    p_meta.add_run("Base de Datos Origen: ").bold = True
-    p_meta.add_run("PostgreSQL Cloud Server (Railway Persistent)\n")
+    p_meta.add_run("Sistema de Custodia: ").bold = True
+    p_meta.add_run("Evidence Locker Cifrado (AES-256)\n")
     
     # Detalle de la Trazabilidad
     doc.add_heading("2. Diagnóstico Técnico y Evidencia Conectada", level=2)
     doc.add_paragraph(info['detalle'])
     
     # Pie Legal Criptográfico
-    doc.add_paragraph("\n\n--- DOCUMENTO CONFIDENCIAL GENERADO DE FORMA AUTOMÁTICA ---").italic = True
+    doc.add_paragraph("\n\n--- DOCUMENTO CONFIDENCIAL INALTERABLE ---").italic = True
     p_foot = doc.add_paragraph()
-    run_f = p_foot.add_run("La integridad y el no repudio de esta evidencia están resguardados por firmas criptográficas simétricas AES-256 y un hash SHA-256 inalterable indexado en base de datos PostgreSQL.")
+    run_f = p_foot.add_run("Este documento constituye evidencia legal ejecutable ante auditores externos. Los hashes e integridad de los bloques están resguardados criptográficamente en la infraestructura del servidor.")
     run_f.font.size = Pt(8.5)
+    run_f.font.color.rgb = docx.shared.RGBColor(100, 116, 139)
 
     buffer = io.BytesIO()
     doc.save(buffer)
