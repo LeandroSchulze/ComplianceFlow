@@ -90,6 +90,7 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
         "norma": "Estándar Corporativo", "titulo": "Reporte Técnico", "evidencia_id": "EV-GEN", "estado": "VERIFICADO", "detalle": "Análisis completado."
     })
 
+    # BRANDING Y LOGO CORPORATIVO PREMIUM CON IMAGEN REAL
     header_table = doc.add_table(rows=1, cols=2)
     header_table.autofit = False
     header_table.columns[0].width = Inches(4.5)
@@ -97,8 +98,17 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     
     cell_left = header_table.cell(0, 0)
     p_logo = cell_left.paragraphs[0]
-    run_icon = p_logo.add_run("🛡️  ")
-    run_icon.font.size = Pt(20)
+    
+    # CONTROL INTELIGENTE DE LOGO: Si tenés la imagen la pone, si no usa el fallback seguro
+    if os.path.exists("static/logo.png"):
+        p_logo.add_run().add_picture("static/logo.png", width=Inches(1.4))
+        p_logo.add_run("\n")
+    elif os.path.exists("logo.png"):
+        p_logo.add_run().add_picture("logo.png", width=Inches(1.4))
+        p_logo.add_run("\n")
+    else:
+        run_icon = p_logo.add_run("🛡️  ")
+        run_icon.font.size = Pt(20)
     
     run_brand = p_logo.add_run("ComplianceFlow")
     run_brand.font.name = 'Arial'
@@ -187,7 +197,6 @@ def descargar_evidencia_unificada(format: str, id: str):
     
     elif format == "pdf":
         try:
-            # Sincronizamos la data completa que viaja hacia ReportGenerator
             mock_payload = {
                 "id": id,
                 "norma": info["norma"],
@@ -196,13 +205,11 @@ def descargar_evidencia_unificada(format: str, id: str):
                 "estado": info["estado"],
                 "detalle": info["detalle"]
             }
-            
             reporter = ReportGenerator(cliente_nombre="Matriz de Infraestructura Conectada")
             archivo_pdf = reporter.generar_pdf_cumplimiento(mock_payload)
             return FileResponse(path=archivo_pdf, media_type="application/pdf", filename=f"evidencia_{id}.pdf")
-            
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error en reporter.py: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error en PDF: {str(e)}")
             
     else:
         raise HTTPException(status_code=400, detail="Formato de exportación inválido.")
