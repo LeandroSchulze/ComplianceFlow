@@ -8,3 +8,4 @@ fpdf
 pyotp
 python-docx
 psycopg2-binary
+reportlab==4.1.0
