@@ -79,6 +79,7 @@ DATA_ESTANDARES = {
 }
 
 # --- LÓGICA AUXILIAR: GENERADOR DE WORD EN MEMORIA ---
+# --- LÓGICA AUXILIAR: GENERADOR DE WORD EN MEMORIA (CORREGIDO) ---
 def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     doc = Document()
     
@@ -89,7 +90,7 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
         section.left_margin = Inches(1)
         section.right_margin = Inches(1)
 
-    # Buscar la data del estándar, o usar fallback genérico si no se encuentra
+    # Buscar la data del estándar
     info = DATA_ESTANDARES.get(doc_id, {
         "norma": "Estándar Corporativo Generado",
         "titulo": "Reporte de Cumplimiento Técnico Estándar",
@@ -125,17 +126,67 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     doc.add_heading("2. Diagnóstico Técnico y Evidencia Conectada", level=2)
     doc.add_paragraph(info['detalle'])
     
-    # Pie Legal Criptográfico
+    # Pie Legal Criptográfico (CORRECCIÓN TÉCNICA AQUÍ)
     doc.add_paragraph("\n\n--- DOCUMENTO CONFIDENCIAL GENERADO DE FORMA AUTOMÁTICA ---").italic = True
-    p_foot = doc.add_paragraph("La integridad y el no repudio de esta evidencia están resguardados por firmas criptográficas simétricas AES-256 y un hash SHA-256 inalterable indexado en base de datos.")
-    p_foot.font.size = Pt(8.5)
+    p_foot = doc.add_paragraph()
+    run_f = p_foot.add_run("La integridad y el no repudio de esta evidencia están resguardados por firmas criptográficas simétricas AES-256 y un hash SHA-256 inalterable indexado en base de datos.")
+    run_f.font.size = Pt(8.5) # Ahora se aplica directamente sobre el Run del texto
 
-    # Compilar a buffer de bytes para descarga limpia
+    # Compilar a buffer de bytes
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     return buffer
 
+
+# --- ENDPOINT DE DESCARGA DINÁMICA OPTIMIZADO ---
+@app.get("/api/compliance/download", tags=["Escáner"])
+def descargar_evidencia_unificada(format: str, id: str):
+    registrar_evento(f"Descarga solicitada para estándar: {id} | Formato: {format}")
+    
+    if id not in DATA_ESTANDARES:
+        raise HTTPException(status_code=404, detail="Estándar regulatorio no localizado.")
+        
+    info = DATA_ESTANDARES[id]
+    
+    # Flujo Word (.docx)
+    if format == "word":
+        try:
+            buffer_word = generar_word_evidencia_interno(id)
+            filename = f"evidencia_{id}_{datetime.now().strftime('%Y%m%d')}.docx"
+            return StreamingResponse(
+                buffer_word, 
+                media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        except Exception as e:
+            registrar_evento(f"Error Word: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error compilando Word: {str(e)}")
+    
+    # Flujo PDF (.pdf)
+    elif format == "pdf":
+        try:
+            reporter = ReportGenerator(cliente_nombre="Matriz de Infraestructura Conectada")
+            # Armamos una estructura compatible por si tu reporter.py busca claves del escáner viejo
+            mock_payload = {
+                "id": id,
+                "norma": info["norma"],
+                "status": info["estado"],
+                "resultados": {"estado_global": info["estado"], "detalle": info["detalle"]},
+                "metrics": {"control_id": info["evidencia_id"], "alertas": 0 if "100%" in info["estado"] else 1}
+            }
+            archivo_pdf = reporter.generar_pdf_cumplimiento(mock_payload)
+            return FileResponse(path=archivo_pdf, media_type="application/pdf", filename=f"evidencia_{id}.pdf")
+        except Exception as e:
+            # Esto va a imprimir en la consola de Railway el error exacto interno de tu reporter.py si falta una clave
+            print(f"❌ ERROR INTERNO EN PDF: {str(e)}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error en reporter.py: {str(e)}. Revisá la terminal de Railway para ver qué campo específico requiere tu plantilla."
+            )
+            
+    else:
+        raise HTTPException(status_code=400, detail="Formato de exportación inválido.")
 # --- ENDPOINTS FRONTEND ---
 @app.get("/", response_class=HTMLResponse, tags=["Frontend"])
 def index():
