@@ -6,3 +6,4 @@ cryptography
 python-dotenv
 fpdf
 pyotp
+python-docx
