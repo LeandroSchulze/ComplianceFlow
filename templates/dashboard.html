@@ -46,7 +46,7 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
             
-            <div class="mb-10 p-6 rounded-2xl glass-panel border border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+            <div id="bannerPrecios" class="mb-10 p-6 rounded-2xl glass-panel border border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
                 <div class="absolute -right-20 -bottom-20 w-60 h-60 bg-gradient-to-br from-teal-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
                 <div>
                     <span class="bg-teal-500/10 text-teal-400 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase border border-teal-500/20">Planes de Activación</span>
@@ -225,6 +225,8 @@
 
     <script>
         let estandarActivoId = "";
+        let tienePagoActivo = false; // Control dinámico interno
+
         const datosEstandares = {
             "ISO-IAM": { titulo: "ISO 27001", sub: "Anexo A.9 — Sistema de Gestión de Seguridad (SGSI)", cardTitulo: "Evidencia de Políticas e Identidades de Acceso", descripcion: "Mapeo integral de usuarios y políticas asignadas en tu consola de administración. Revisa de forma constante que ningún perfil posea accesos elevados sin MFA.", estado: "⚠️ 1 OBSERVACIÓN DETECTADA", estadoClass: "bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-bold", fecha: "2026-05-25 14:20 UTC", hash: "0a9b8c7d6e8f4a2b1c3d9e8f7a6b5c4d3e2f1a0b", origen: "AWS IAM API Fetch" },
             "SOC2-S3": { titulo: "SOC 2 (Type I / II)", sub: "Trust Services Criteria — Sección CC6.3", cardTitulo: "Evidencia de Infraestructura de Almacenamiento", descripcion: "Este reporte contiene los registros criptográficos detallados extraídos de tus buckets de Amazon S3. Certifica la activación del bloqueo de accesos públicos globales.", estado: "🟢 100% CUMPLIDO", estadoClass: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold", fecha: "2026-05-26 07:34 UTC", hash: "f3c8a9e2d1b5c4a7e9f8d7c6b5a4f3e2d1c0b9a8", origen: "AWS IAM-Role Auth" },
@@ -263,12 +265,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cliente_nombre: "Matriz de Infraestructura Conectada" })
                 });
-                if (response.status === 402) {
-                    msg.classList.add('hidden');
-                    alert("⚠️ Su cuenta requiere una licencia corporativa activa para procesar auditorías.");
-                    return;
-                }
-                if (!response.ok) throw new Error("Error en el escáner.");
                 msg.classList.add('hidden');
                 alert("✅ Auditoría completada con éxito.");
             } catch (err) {
@@ -283,8 +279,18 @@
                 const response = await fetch('/api/compliance/copilot', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ norma_id: estandarActivoId, infraestructura_tipo: infraSeleccionada })
+                    body: JSON.stringify({ 
+                        norma_id: estandarActivoId, 
+                        infraestructura_tipo: infraSeleccionada,
+                        premium_active: tienePagoActivo 
+                    })
                 });
+                
+                if (response.status === 402) {
+                    alert("⚠️ El Copiloto con Inteligencia Artificial requiere una Licencia Enterprise activa. Por favor, complete el pago en el panel superior.");
+                    return;
+                }
+                
                 if (!response.ok) throw new Error("Error en el copiloto.");
                 const data = await response.json();
                 document.getElementById('iaDiagnostico').innerText = data.diagnostico_profundo;
@@ -297,55 +303,49 @@
         async function pagarPlanIndividual() {
             try {
                 const res = await fetch('/api/checkout/preference/individual', { method: 'POST' });
-                
                 if (!res.ok) {
                     const errData = await res.json();
-                    alert("🚨 Error en el Servidor (Plan Express):\n" + (errData.detail || "Fallo al procesar la solicitud. Verifique los logs."));
+                    alert("🚨 Error en Servidor (Plan Express):\n" + (errData.detail || "Fallo técnico"));
                     return;
                 }
-                
                 const data = await res.json();
-                if (data.init_point) {
-                    window.location.href = data.init_point; 
-                } else {
-                    alert("🚨 MercadoPago no devolvió un punto de inicio válido.");
-                }
-            } catch (err) { 
-                alert("Error de red al conectar con la pasarela de pagos."); 
-            }
+                if (data.init_point) window.location.href = data.init_point; 
+            } catch (err) { alert("Error al conectar con la pasarela."); }
         }
 
         async function pagarPlanPremium() {
             try {
                 const res = await fetch('/api/checkout/preference/premium', { method: 'POST' });
-                
                 if (!res.ok) {
                     const errData = await res.json();
-                    alert("🚨 Error en el Servidor (Plan Enterprise):\n" + (errData.detail || "Fallo al procesar la solicitud. Verifique los logs."));
+                    alert("🚨 Error en Servidor (Plan Enterprise):\n" + (errData.detail || "Fallo técnico"));
                     return;
                 }
-                
                 const data = await res.json();
-                if (data.init_point) {
-                    window.location.href = data.init_point;
-                } else {
-                    alert("🚨 MercadoPago no devolvió un punto de inicio válido.");
-                }
-            } catch (err) { 
-                alert("Error de red al conectar con la pasarela premium."); 
-            }
+                if (data.init_point) window.location.href = data.init_point;
+            } catch (err) { alert("Error al conectar con la pasarela premium."); }
         }
 
         function ejecutarDescarga(formato) {
-            window.location.href = `/api/compliance/download?format=${formato}&id=${estandarActivoId}`;
+            if (!tienePagoActivo) {
+                alert("⚠️ Descarga Protegida: Esta utilidad requiere una activación de licencia corporativa.");
+                return;
+            }
+            window.location.href = `/api/compliance/download?format=${formato}&id=${estandarActivoId}&active=true`;
         }
 
-        // Modifica el badge si detecta el retorno exitoso de pago
+        // CONTROL AUTOMÁTICO DE SUSCRIPCIÓN POR URL PARAMS
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('tier') === 'premium' || urlParams.get('payment') === 'success') {
+            tienePagoActivo = true;
+            
+            // Cambiar Badge de Estado
             const badge = document.getElementById('badgeLicencia');
             badge.innerText = "LICENCIA ENTERPRISE";
-            badge.className = "text-amber-400 font-mono font-bold bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-800/30 text-[10px]";
+            badge.className = "text-emerald-400 font-mono font-bold bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-800/30 text-[10px]";
+            
+            // Ocultar banner de precios al estar pago
+            document.getElementById('bannerPrecios').classList.add('hidden');
         }
     </script>
 </body>
