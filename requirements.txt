@@ -9,3 +9,4 @@ pyotp
 python-docx
 psycopg2-binary
 reportlab==4.1.0
+mercadopago==2.1.0
