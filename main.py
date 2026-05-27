@@ -7,8 +7,10 @@ import os
 import io
 from datetime import datetime
 from dotenv import load_dotenv
+
+# CORRECCIÓN DE IMPORTACIONES PARA EL LOGO CORPORATIVO
 from docx import Document
-from docx.shared import Pt, Inches
+from docx.shared import Pt, Inches, RGBColor
 
 # Importamos tus módulos existentes
 from scanner import ComplianceScanner
@@ -41,7 +43,6 @@ class ScanRequest(BaseModel):
 
 # --- CLASE CAMALEÓN PARA EVITAR ERRORES EN TEMPLATES PDF ---
 class SmartBreach(str):
-    """Clase especial que previene KeyErrors si el template busca diccionarios o strings"""
     def __getitem__(self, key): return str(self)
     def get(self, key, default=None): return str(self)
 
@@ -59,7 +60,7 @@ DATA_ESTANDARES = {
         "titulo": "Análisis Criptográfico de Infraestructura de Almacenamiento Nube",
         "evidencia_id": "EV-SOC2-S3-9202",
         "estado": "🟢 100% CUMPLIDO (Secure Vault Activo)",
-        "detalle": "Se ha verificado mediante llamadas programáticas seguras que el 100% de los repositorios de datos globales (Amazon S3) poseen las restricciones globales 'Public Access Block' activas. Las firmas confirman cifrado del lado del servidor SSE-S3 de forma persistente."
+        "detalle": "Se ha verificado mediante llamadas programáticas seguras que el 100% de los repositorios de datos globales (Amazon S3) poseen las restricciones globales 'Public Access Block' activas. Las firmas confirman cifrado del lado del servidor SSE-S3 de forma presumible y persistente."
     },
     "SOC1-FIN": {
         "norma": "SOC 1 — Controles Internos Financieros (ICFR)",
@@ -80,7 +81,7 @@ DATA_ESTANDARES = {
         "titulo": "Matriz Histórica de Mitigación de Riesgos y Seguridad Laboral",
         "evidencia_id": "EV-ISO45-OHS-009a",
         "estado": "🟢 100% CUMPLIDO",
-        "detalle": "Estructura de logs de control físico e higiene ocupacional verificado. Se registran las firmas digitales de conformidad de las capacitaciones mandatorias del personal y las inspecciones estructurales de planta."
+        "detalle": "Estructura de logs de control físico e higiene ocupacional verificado. Se registran las firmas digitales de conformidad de las capacidades mandatorias del personal y las inspecciones estructurales de planta."
     }
 }
 
@@ -99,16 +100,13 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
         "norma": "Estándar Corporativo", "titulo": "Reporte Técnico", "evidencia_id": "EV-GEN", "estado": "VERIFICADO", "detalle": "Análisis completado."
     })
 
-    # =========================================================================
-    # LOGO Y CABECERA PREMIUM (CONSTRUCCIÓN NATIVA)
-    # =========================================================================
-    # Creamos una estructura de tabla de 1 fila x 2 columnas para el branding
+    # BRANDING Y LOGO CORPORATIVO PREMIUM NATIVO
     header_table = doc.add_table(rows=1, cols=2)
     header_table.autofit = False
     header_table.columns[0].width = Inches(4.5)
     header_table.columns[1].width = Inches(2.0)
     
-    # Columna Izquierda: Isotipo y Nombre de la App
+    # Nombre de la App e Icono
     cell_left = header_table.cell(0, 0)
     p_logo = cell_left.paragraphs[0]
     run_icon = p_logo.add_run("🛡️  ")
@@ -118,44 +116,43 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     run_brand.font.name = 'Arial'
     run_brand.font.size = Pt(16)
     run_brand.font.bold = True
-    run_brand.font.color.rgb = docx.shared.RGBColor(15, 23, 42) # Azul Marino Oscuro
+    run_brand.font.color.rgb = RGBColor(15, 23, 42) # Azul Marino
     
     p_sub_logo = cell_left.add_paragraph()
     run_sub_logo = p_sub_logo.add_run("AUTOMATED B2B COMPLIANCE SUITE")
     run_sub_logo.font.name = 'Arial'
     run_sub_logo.font.size = Pt(7.5)
     run_sub_logo.font.bold = True
-    run_sub_logo.font.color.rgb = docx.shared.RGBColor(20, 184, 166) # Color Teal / Turquesa
+    run_sub_logo.font.color.rgb = RGBColor(20, 184, 166) # Teal
     
-    # Columna Derecha: Sello de Seguridad de la Base de Datos
+    # Sello de Seguridad Derecho
     cell_right = header_table.cell(0, 1)
     p_secure = cell_right.paragraphs[0]
-    p_secure.alignment = 2 # Alineación a la derecha
+    p_secure.alignment = 2 
     run_sec_txt = p_secure.add_run("SECURE RECORD\n")
     run_sec_txt.font.size = Pt(8)
     run_sec_txt.font.bold = True
-    run_sec_txt.font.color.rgb = docx.shared.RGBColor(16, 185, 129) # Verde esmeralda
+    run_sec_txt.font.color.rgb = RGBColor(16, 185, 129) # Verde
     
     run_db_txt = p_secure.add_run("PostgreSQL Verified")
     run_db_txt.font.size = Pt(8)
     run_db_txt.font.italic = True
     
-    # Línea divisoria elegante
+    # Línea elegante divisoria
     p_line = doc.add_paragraph()
     run_line = p_line.add_run("_______________________________________________________________________")
-    run_line.font.color.rgb = docx.shared.RGBColor(203, 213, 225)
+    run_line.font.color.rgb = RGBColor(203, 213, 225)
     run_line.font.size = Pt(10)
     
-    doc.add_paragraph("\n") # Espaciador
-    # =========================================================================
+    doc.add_paragraph("\n") 
 
     # Título del Marco Regulatorio
     h_norma = doc.add_heading(level=1)
     run_norma = h_norma.add_run(f"Marco Regulatorio: {info['norma']}")
     run_norma.font.name = 'Arial'
-    run_norma.font.color.rgb = docx.shared.RGBColor(15, 23, 42)
+    run_norma.font.color.rgb = RGBColor(15, 23, 42)
     
-    # Tabla de Metadatos del Auditor
+    # Tabla de Metadatos
     doc.add_heading("1. Metadatos de Control de la Auditoría", level=2)
     p_meta = doc.add_paragraph()
     p_meta.add_run("Título del Estudio: ").bold = True
@@ -178,13 +175,12 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     p_foot = doc.add_paragraph()
     run_f = p_foot.add_run("Este documento constituye evidencia legal ejecutable ante auditores externos. Los hashes e integridad de los bloques están resguardados criptográficamente en la infraestructura del servidor.")
     run_f.font.size = Pt(8.5)
-    run_f.font.color.rgb = docx.shared.RGBColor(100, 116, 139)
+    run_f.font.color.rgb = RGBColor(100, 116, 139)
 
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     return buffer
-
 
 # --- ENDPOINT DE DESCARGA DINÁMICA ---
 @app.get("/api/compliance/download", tags=["Escáner"])
@@ -212,10 +208,7 @@ def descargar_evidencia_unificada(format: str, id: str):
     # Flujo PDF (.pdf)
     elif format == "pdf":
         try:
-            # Creamos el objeto camaleón con el texto del detalle
             smart_b = SmartBreach(info["detalle"])
-            
-            # Inyectamos de forma masiva todas las variantes que tu reporter.py podría buscar
             mock_payload = {
                 "id": id,
                 "norma": info["norma"],
