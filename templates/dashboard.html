@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enterprise Dashboard | ComplianceFlow</title>
-    <!-- Tailwind CSS v4 Engine -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         .glass-panel {
@@ -16,7 +15,6 @@
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-teal-500/30 selection:text-teal-200">
 
     <div>
-        <!-- NAV BAR PREMIUM -->
         <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex justify-between items-center shadow-2xl">
             <div class="flex items-center space-x-3">
                 <div class="bg-teal-500/10 p-2 rounded-xl border border-teal-500/20 shadow-inner">
@@ -29,13 +27,11 @@
             </div>
             
             <div class="flex items-center space-x-6 text-xs">
-                <!-- Estado de la Cuenta Corporativa -->
                 <div class="flex items-center space-x-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
                     <span class="text-slate-400 font-medium">Estado de Cuenta:</span>
                     <span id="badgeLicencia" class="text-amber-500 font-mono font-bold bg-amber-950/20 px-2 py-0.5 rounded border border-amber-900/40 uppercase text-[10px]">Licencia Pendiente</span>
                 </div>
 
-                <!-- Bloque de Contacto Nav -->
                 <div class="hidden lg:flex items-center space-x-1.5 text-slate-400 bg-slate-800/40 px-3 py-1.5 rounded-lg border border-slate-700/50">
                     <span class="text-teal-400">📩</span>
                     <span>Soporte: <strong class="text-slate-300 font-mono font-medium">info.alerttrail@gmail.com</strong></span>
@@ -50,7 +46,6 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
             
-            <!-- BANNER DE TARIFAS SEGMENTADAS EN USD -->
             <div class="mb-10 p-6 rounded-2xl glass-panel border border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
                 <div class="absolute -right-20 -bottom-20 w-60 h-60 bg-gradient-to-br from-teal-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
                 <div>
@@ -68,7 +63,6 @@
                 </div>
             </div>
 
-            <!-- SUITE GENERAL (REPOSITORIO DE CONTROLES) -->
             <div id="vistaSuite" class="transition-all duration-300">
                 <div class="mb-8">
                     <h2 class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400">Suite de Control de Evidencias B2B</h2>
@@ -120,7 +114,6 @@
                 </div>
             </div>
 
-            <!-- PANEL DE DETALLE EXCLUSIVO (VISTA INTERNA DEL ESTÁNDAR) -->
             <div id="vistaDetalle" class="hidden space-y-8 animate-fade-in">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 p-5 rounded-2xl border border-slate-800">
                     <div>
@@ -156,7 +149,6 @@
                         </div>
                     </div>
 
-                    <!-- COPILOTO CON INTELIGENCIA ARTIFICIAL -->
                     <div class="lg:col-span-5 bg-slate-900 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between shadow-xl relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-gradient-to-l from-teal-500/10 to-transparent w-full h-full pointer-events-none"></div>
                         <div>
@@ -185,7 +177,6 @@
                     </div>
                 </div>
 
-                <!-- RESULTADOS DE LA INTELIGENCIA ARTIFICIAL -->
                 <div id="bloqueResultadoIA" class="hidden bg-slate-900 rounded-2xl border border-teal-500/20 p-6 shadow-2xl relative overflow-hidden">
                     <h4 class="text-xs font-black tracking-widest text-teal-400 uppercase mb-4 flex items-center">
                         <span class="animate-pulse mr-2 h-2 w-2 rounded-full bg-teal-400 inline-block"></span> Diagnóstico Computado por Copiloto IA
@@ -197,7 +188,6 @@
                     </div>
                 </div>
 
-                <!-- HISTÓRICO DE EVIDENCIAS -->
                 <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex justify-between items-start border-b border-slate-800 pb-4 mb-4">
                         <div><h3 id="txtCardTitulo" class="text-base font-bold text-slate-100">Reporte</h3></div>
@@ -222,7 +212,6 @@
         </div>
     </div>
 
-    <!-- FOOTER CORPORATIVO -->
     <footer class="bg-slate-900 border-t border-slate-800 mt-20 py-6 px-6 text-center text-xs text-slate-500">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <p>© 2026 ComplianceFlow. Todos los derechos reservados. Evidencias criptográficas inalterables firmadas en la red corporativa.</p>
@@ -234,7 +223,6 @@
         </div>
     </footer>
 
-    <!-- LOGICA DEL DASHBOARD JS -->
     <script>
         let estandarActivoId = "";
         const datosEstandares = {
@@ -312,7 +300,7 @@
                 
                 if (!res.ok) {
                     const errData = await res.json();
-                    alert("🚨 Error en el Servidor (Individual):\n" + (errData.detail || "Fallo desconocido"));
+                    alert("🚨 Error en el Servidor (Plan Express):\n" + (errData.detail || "Fallo al procesar la solicitud. Verifique los logs."));
                     return;
                 }
                 
@@ -333,7 +321,7 @@
                 
                 if (!res.ok) {
                     const errData = await res.json();
-                    alert("🚨 Error en el Servidor (Premium):\n" + (errData.detail || "Fallo desconocido"));
+                    alert("🚨 Error en el Servidor (Plan Enterprise):\n" + (errData.detail || "Fallo al procesar la solicitud. Verifique los logs."));
                     return;
                 }
                 
