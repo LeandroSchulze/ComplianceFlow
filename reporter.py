@@ -37,7 +37,7 @@ class ReportGenerator:
         self.pdf.ln(20)
         self.pdf.set_font("Arial", 'I', 8)
         nota_legal = ("Limitación de Responsabilidad: Este reporte es una herramienta de asistencia. "
-                      "La decisión final de cumplimiento recae en el cliente o su auditor certificado.") [cite: 20]
+                      "La decisión final de cumplimiento recae en el cliente o su auditor certificado.")
         self.pdf.multi_cell(0, 5, txt=nota_legal)
 
         filename = f"reporte_compliance_{self.cliente}.pdf"
