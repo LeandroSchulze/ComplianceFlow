@@ -125,7 +125,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 p-5 rounded-2xl border border-slate-800">
                     <div>
                         <button onclick="volverASuite()" class="text-xs font-bold text-slate-400 hover:text-white transition-colors mb-2.5 flex items-center bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 cursor-pointer">
-                            ← Volver a la Suite General
+                            &larr; Volver a la Suite General
                         </button>
                         <h2 id="txtEstandarTitulo" class="text-2xl font-black text-slate-100">Estándar</h2>
                         <p id="txtEstandarSub" class="text-xs text-slate-400 mt-0.5">Módulo de control de evidencias</p>
@@ -309,17 +309,43 @@
         async function pagarPlanIndividual() {
             try {
                 const res = await fetch('/api/checkout/preference/individual', { method: 'POST' });
+                
+                if (!res.ok) {
+                    const errData = await res.json();
+                    alert("🚨 Error en el Servidor (Individual):\n" + (errData.detail || "Fallo desconocido"));
+                    return;
+                }
+                
                 const data = await res.json();
-                window.location.href = data.init_point; 
-            } catch (err) { alert("Error con MercadoPago."); }
+                if (data.init_point) {
+                    window.location.href = data.init_point; 
+                } else {
+                    alert("🚨 MercadoPago no devolvió un punto de inicio válido.");
+                }
+            } catch (err) { 
+                alert("Error de red al conectar con la pasarela de pagos."); 
+            }
         }
 
         async function pagarPlanPremium() {
             try {
                 const res = await fetch('/api/checkout/preference/premium', { method: 'POST' });
+                
+                if (!res.ok) {
+                    const errData = await res.json();
+                    alert("🚨 Error en el Servidor (Premium):\n" + (errData.detail || "Fallo desconocido"));
+                    return;
+                }
+                
                 const data = await res.json();
-                window.location.href = data.init_point;
-            } catch (err) { alert("Error con MercadoPago Premium."); }
+                if (data.init_point) {
+                    window.location.href = data.init_point;
+                } else {
+                    alert("🚨 MercadoPago no devolvió un punto de inicio válido.");
+                }
+            } catch (err) { 
+                alert("Error de red al conectar con la pasarela premium."); 
+            }
         }
 
         function ejecutarDescarga(formato) {
