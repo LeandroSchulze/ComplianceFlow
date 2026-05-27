@@ -8,12 +8,10 @@ import io
 from datetime import datetime
 from dotenv import load_dotenv
 
-# CORRECCIÓN DEFINITIVA DE IMPORTACIONES PARA EVITAR EL NAMEERROR
 import docx
 from docx import Document
 from docx.shared import Pt, Inches, RGBColor
 
-# Importamos tus módulos existentes
 from scanner import ComplianceScanner
 from reporter import ReportGenerator
 from auth import AuthManager
@@ -30,7 +28,6 @@ app = FastAPI(
 
 auth_handler = AuthManager()
 
-# Modelos de Pydantic
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
@@ -42,12 +39,6 @@ class UserLogin(BaseModel):
 class ScanRequest(BaseModel):
     cliente_nombre: str
 
-# --- CLASE CAMALEÓN PARA EVITAR ERRORES EN TEMPLATES PDF ---
-class SmartBreach(str):
-    def __getitem__(self, key): return str(self)
-    def get(self, key, default=None): return str(self)
-
-# --- REPOSITORIO DE DATOS DE PRUEBA CORPORATIVOS ---
 DATA_ESTANDARES = {
     "ISO-IAM": {
         "norma": "ISO 27001 — Anexo A.9",
@@ -86,11 +77,9 @@ DATA_ESTANDARES = {
     }
 }
 
-# --- LÓGICA AUXILIAR: GENERADOR DE WORD EN MEMORIA ---
 def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     doc = Document()
     
-    # Configuración de márgenes institucionales (1 pulgada por lado)
     for section in doc.sections:
         section.top_margin = Inches(1)
         section.bottom_margin = Inches(1)
@@ -101,15 +90,11 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
         "norma": "Estándar Corporativo", "titulo": "Reporte Técnico", "evidencia_id": "EV-GEN", "estado": "VERIFICADO", "detalle": "Análisis completado."
     })
 
-    # =========================================================================
-    # ENCABEZADO Y LOGO NATIVO PREMIUM (Sincronizado sin dependencias externas)
-    # =========================================================================
     header_table = doc.add_table(rows=1, cols=2)
     header_table.autofit = False
     header_table.columns[0].width = Inches(4.5)
     header_table.columns[1].width = Inches(2.0)
     
-    # Texto del Logo (Izquierda)
     cell_left = header_table.cell(0, 0)
     p_logo = cell_left.paragraphs[0]
     run_icon = p_logo.add_run("🛡️  ")
@@ -119,29 +104,27 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     run_brand.font.name = 'Arial'
     run_brand.font.size = Pt(16)
     run_brand.font.bold = True
-    run_brand.font.color.rgb = RGBColor(15, 23, 42) # Slate 900
+    run_brand.font.color.rgb = RGBColor(15, 23, 42)
     
     p_sub_logo = cell_left.add_paragraph()
     run_sub_logo = p_sub_logo.add_run("AUTOMATED B2B COMPLIANCE SUITE")
     run_sub_logo.font.name = 'Arial'
     run_sub_logo.font.size = Pt(7.5)
     run_sub_logo.font.bold = True
-    run_sub_logo.font.color.rgb = RGBColor(20, 184, 166) # Teal 500
+    run_sub_logo.font.color.rgb = RGBColor(20, 184, 166)
     
-    # Sello de Verificación (Derecha)
     cell_right = header_table.cell(0, 1)
     p_secure = cell_right.paragraphs[0]
     p_secure.alignment = 2 
     run_sec_txt = p_secure.add_run("SECURE RECORD\n")
     run_sec_txt.font.size = Pt(8)
     run_sec_txt.font.bold = True
-    run_sec_txt.font.color.rgb = RGBColor(16, 185, 129) # Emerald 500
+    run_sec_txt.font.color.rgb = RGBColor(16, 185, 129)
     
     run_db_txt = p_secure.add_run("PostgreSQL Verified")
     run_db_txt.font.size = Pt(8)
     run_db_txt.font.italic = True
     
-    # Línea elegante divisoria de cabecera
     p_line = doc.add_paragraph()
     run_line = p_line.add_run("_______________________________________________________________________")
     run_line.font.color.rgb = RGBColor(203, 213, 225)
@@ -149,13 +132,11 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     
     doc.add_paragraph("\n") 
 
-    # Contenido: Título de la Norma
     h_norma = doc.add_heading(level=1)
     run_norma = h_norma.add_run(f"Marco Regulatorio: {info['norma']}")
     run_norma.font.name = 'Arial'
     run_norma.font.color.rgb = RGBColor(15, 23, 42)
     
-    # Sección 1: Metadatos
     doc.add_heading("1. Metadatos de Control de la Auditoría", level=2)
     p_meta = doc.add_paragraph()
     p_meta.add_run("Título del Estudio: ").bold = True
@@ -169,11 +150,9 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     p_meta.add_run("Sistema de Custodia: ").bold = True
     p_meta.add_run("Evidence Locker Cifrado (AES-256)\n")
     
-    # Sección 2: Detalle
     doc.add_heading("2. Diagnóstico Técnico y Evidencia Conectada", level=2)
     doc.add_paragraph(info['detalle'])
     
-    # Pie de página legal
     doc.add_paragraph("\n\n--- DOCUMENTO CONFIDENCIAL INALTERABLE ---").italic = True
     p_foot = doc.add_paragraph()
     run_f = p_foot.add_run("Este documento constituye evidencia legal ejecutable ante auditores externos. Los hashes e integridad de los bloques están resguardados criptográficamente en la infraestructura del servidor.")
@@ -185,7 +164,6 @@ def generar_word_evidencia_interno(doc_id: str) -> io.BytesIO:
     buffer.seek(0)
     return buffer
 
-# --- ENDPOINT DE DESCARGA DINÁMICA ---
 @app.get("/api/compliance/download", tags=["Escáner"])
 def descargar_evidencia_unificada(format: str, id: str):
     registrar_evento(f"Descarga solicitada para estándar: {id} | Formato: {format}")
@@ -195,7 +173,6 @@ def descargar_evidencia_unificada(format: str, id: str):
         
     info = DATA_ESTANDARES[id]
     
-    # Exportación Word (.docx)
     if format == "word":
         try:
             buffer_word = generar_word_evidencia_interno(id)
@@ -208,19 +185,16 @@ def descargar_evidencia_unificada(format: str, id: str):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error en Word: {str(e)}")
     
-    # Exportación PDF (.pdf)
     elif format == "pdf":
         try:
-            smart_b = SmartBreach(info["detalle"])
+            # Sincronizamos la data completa que viaja hacia ReportGenerator
             mock_payload = {
                 "id": id,
                 "norma": info["norma"],
-                "status": info["estado"],
-                "estado_global": info["estado"],
-                "detalle": info["detalle"],
-                "brechas": [] if "100%" in info["estado"] else [smart_b],
-                "vulnerabilidades": [] if "100%" in info["estado"] else [smart_b],
-                "metrics": {"control_id": info["evidencia_id"], "alertas": 0 if "100%" in info["estado"] else 1}
+                "titulo": info["titulo"],
+                "evidencia_id": info["evidencia_id"],
+                "estado": info["estado"],
+                "detalle": info["detalle"]
             }
             
             reporter = ReportGenerator(cliente_nombre="Matriz de Infraestructura Conectada")
@@ -233,7 +207,6 @@ def descargar_evidencia_unificada(format: str, id: str):
     else:
         raise HTTPException(status_code=400, detail="Formato de exportación inválido.")
 
-# --- ENDPOINTS FRONTEND ---
 @app.get("/", response_class=HTMLResponse, tags=["Frontend"])
 def index(): return FileResponse("templates/index.html")
 
