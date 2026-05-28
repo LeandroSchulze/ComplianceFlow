@@ -25,14 +25,10 @@ load_dotenv()
 app = FastAPI(
     title="ComplianceFlow AI Platform",
     description="Ecosistema Premium con Pasarelas de Cobro Avanzadas e Inteligencia Artificial",
-    version="1.3.0"
+    version="1.3.5"
 )
 
 auth_handler = AuthManager()
-
-# Inicialización segura del SDK de MercadoPago
-mp_access_token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "TEST-TU-ACCESS-TOKEN")
-mp_sdk = mercadopago.SDK(mp_access_token)
 
 # --- MODELOS DE DATOS (PYDANTIC) ---
 class UserRegister(BaseModel):
@@ -90,7 +86,7 @@ class ComplianceAI_CoPilot:
         }
         fallback = {
             "analisis_ia": f"Análisis algorítmico predictivo completado para '{infra}'. El sistema corrobora consistencia estructural pero detecta falta de documentación procedimental indexada en la base de datos.",
-            "lo_que_falta": "1. Vincular los hashes de control PostgreSQL con los manuales de operación interna.\n2. Establecer un simulacro de brecha semestral automatizado.",
+            "lo_que_falta": "1. Vincular los hashes de control PostgreSQL con los manuales de operation interna.\n2. Establecer un simulacro de brecha semestral automatizado.",
             "pregunta_del_auditor": "¿Cuál es su procedimiento documentado para validar que los parches de seguridad del sistema operativo se aplican en menos de 7 días?"
         }
         res = gaps_libreria.get(norma_id, fallback)
@@ -114,11 +110,15 @@ def obtener_ayuda_copilot_ia(solicitud: AICopilotRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # =====================================================================
-# 💳 PASARELAS DE COBRO CORREGIDAS (USD -> ARS)
+# 💳 PASARELAS DE COBRO CORREGIDAS (INICIALIZACIÓN DINÁMICA POR LLAMADA)
 # =====================================================================
 @app.post("/api/checkout/preference/individual", tags=["Financiero"])
 def crear_preferencia_individual():
     try:
+        # Forzar lectura directa y limpia de las variables de Railway en cada intento
+        token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
+        sdk_dinamico = mercadopago.SDK(token)
+        
         raw_cambio = os.getenv("TIPO_CAMBIO", "1000.0").strip()
         tipo_cambio = float(raw_cambio)
         precio_final_ars = float(20.0 * tipo_cambio)
@@ -133,20 +133,26 @@ def crear_preferencia_individual():
             "auto_return": "approved",
         }
         
-        mp_res = mp_sdk.preference().create(preference_data)
+        mp_res = sdk_dinamico.preference().create(preference_data)
         
-        # Corrección de lectura para mercadopago SDK v2.x
+        # Validación robusta de respuesta oficial del SDK
         if "response" in mp_res and "init_point" in mp_res["response"]:
             return {"init_point": mp_res["response"]["init_point"]}
         else:
-            raise HTTPException(status_code=400, detail=f"Error SDK de MercadoPago: {str(mp_res)}")
+            err_detail = mp_res.get("response", {}).get("message", str(mp_res))
+            raise HTTPException(status_code=400, detail=f"MercadoPago API Error: {err_detail}")
             
+    except HTTPException as he:
+        raise he
     except Exception as e: 
         raise HTTPException(status_code=500, detail=f"Error al generar pasarela individual: {str(e)}")
 
 @app.post("/api/checkout/preference/premium", tags=["Financiero"])
 def crear_preferencia_premium():
     try:
+        token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
+        sdk_dinamico = mercadopago.SDK(token)
+        
         raw_cambio = os.getenv("TIPO_CAMBIO", "1000.0").strip()
         tipo_cambio = float(raw_cambio)
         precio_final_ars = float(50.0 * tipo_cambio)
@@ -161,13 +167,16 @@ def crear_preferencia_premium():
             "auto_return": "approved",
         }
         
-        mp_res = mp_sdk.preference().create(preference_data)
+        mp_res = sdk_dinamico.preference().create(preference_data)
         
         if "response" in mp_res and "init_point" in mp_res["response"]:
             return {"init_point": mp_res["response"]["init_point"]}
         else:
-            raise HTTPException(status_code=400, detail=f"Error SDK de MercadoPago Premium: {str(mp_res)}")
+            err_detail = mp_res.get("response", {}).get("message", str(mp_res))
+            raise HTTPException(status_code=400, detail=f"MercadoPago API Error: {err_detail}")
             
+    except HTTPException as he:
+        raise he
     except Exception as e: 
         raise HTTPException(status_code=500, detail=f"Error al generar pasarela premium: {str(e)}")
 
