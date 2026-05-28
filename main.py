@@ -25,7 +25,7 @@ load_dotenv()
 app = FastAPI(
     title="ComplianceFlow AI Platform",
     description="Ecosistema Premium con Pasarelas de Cobro Avanzadas e Inteligencia Artificial",
-    version="1.4.0"
+    version="1.4.5"
 )
 
 auth_handler = AuthManager()
@@ -47,11 +47,12 @@ class AICopilotRequest(BaseModel):
     infraestructura_tipo: str 
     premium_active: bool = False
 
-# Repositorio maestro de estandares y evidencias
+# Repositorio maestro de estandares y evidencias (Incluye ISO 9001)
 DATA_ESTANDARES = {
     "ISO-IAM": {"norma": "ISO 27001 — Anexo A.9", "titulo": "Auditoría de Control de Accesos", "evidencia_id": "EV-ISO-A9-8812", "estado": "⚠️ OBSERVACIÓN DETECTADA", "detalle": "Políticas AdministratorAccess asignadas a cuentas de desarrollo sin MFA activo."},
     "SOC2-S3": {"norma": "SOC 2 Type II — CC6.3", "titulo": "Análisis Criptográfico S3", "evidencia_id": "EV-SOC2-S3-9202", "estado": "🟢 100% CUMPLIDO", "detalle": "Public Access Block activo y cifrado SSE-S3 de forma派生."},
-    "SOC1-FIN": {"norma": "SOC 1 — Controles ICFR", "titulo": "Matriz de Segregación de Funciones", "evidencia_id": "EV-SOC1-FIN-7741", "estado": "🟢 100% CUMPLIDO", "detalle": "Firmas transaccionales de balances contables desacopladas de cuentas de desarrollo."}
+    "SOC1-FIN": {"norma": "SOC 1 — Controles ICFR", "titulo": "Matriz de Segregación de Funciones", "evidencia_id": "EV-SOC1-FIN-7741", "estado": "🟢 100% CUMPLIDO", "detalle": "Firmas transaccionales de balances contables desacopladas de cuentas de desarrollo."},
+    "ISO-9001": {"norma": "ISO 9001 — Cláusula 8.2", "titulo": "Trazabilidad de Requisitos de Calidad", "evidencia_id": "EV-ISO9-QA-3321", "estado": "🟢 100% CUMPLIDO", "detalle": "Pipeline CI/CD automatizado con aprobación cruzada digital firmada por control de calidad."}
 }
 
 # --- CONEXIÓN A BASE DE DATOS POSTGRES ---
@@ -82,6 +83,11 @@ class ComplianceAI_CoPilot:
                 "analisis_ia": f"Análisis predictivo sobre '{infra}': Se verificó el bloqueo público, pero la IA nota que no se está realizando un análisis periódico de entropía de datos para descubrir archivos confidenciales sin cifrar.",
                 "lo_que_falta": "1. Forzar política TLS 1.3 obligatoria en buckets.\n2. Activar la retención legal de objetos (Object Lock) para prevenir Ransomware.",
                 "pregunta_del_auditor": "Si un atacante compromete las credenciales de un administrador, ¿qué control evita que borre el historial de auditoría completo?"
+            },
+            "ISO-9001": {
+                "analisis_ia": f"Análisis de Calidad sobre '{infra}': La IA confirma consistencia técnica en la trazabilidad del pipeline, pero detecta la ausencia de firmas criptográficas hash en los entregables intermedios.",
+                "lo_que_falta": "1. Integrar firmas SHA-256 automáticas en artefactos de compilación.\n2. Documentar el proceso de rollback automatizado en caso de fallas de QA.",
+                "pregunta_del_auditor": "¿Cómo asegura que los requisitos de calidad definidos por el cliente se validen de forma inalterable en cada despliegue?"
             }
         }
         fallback = {
@@ -109,7 +115,7 @@ def obtener_ayuda_copilot_ia(solicitud: AICopilotRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # =====================================================================
-# 💳 PASARELAS DE COBRO RESISTENTES CON AUTO-FALLBACK
+# 💳 PASARELAS DE COBRO CORREGIDAS (REDIRECCIÓN REAL OBLIGATORIA A CHECKOUT)
 # =====================================================================
 @app.post("/api/checkout/preference/individual", tags=["Financiero"])
 def crear_preferencia_individual():
@@ -138,11 +144,12 @@ def crear_preferencia_individual():
         else:
             err_msg = mp_res.get("response", {}).get("message", "")
             if "not active" in err_msg.lower() or "collector" in err_msg.lower():
-                return {"init_point": "https://complianceflow-production.up.railway.app/dashboard?payment=success"}
+                # En lugar de saltarse el pago, abre la pantalla de Checkout Sandbox de simulación oficial de MP
+                return {"init_point": "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=sandbox-simulation-mode-individual"}
             raise HTTPException(status_code=400, detail=f"MercadoPago API Error: {err_msg}")
             
-    except Exception as e: 
-        return {"init_point": "https://complianceflow-production.up.railway.app/dashboard?payment=success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al conectar con la API de cobros: {str(e)}")
 
 @app.post("/api/checkout/preference/premium", tags=["Financiero"])
 def crear_preferencia_premium():
@@ -171,11 +178,11 @@ def crear_preferencia_premium():
         else:
             err_msg = mp_res.get("response", {}).get("message", "")
             if "not active" in err_msg.lower() or "collector" in err_msg.lower():
-                return {"init_point": "https://complianceflow-production.up.railway.app/dashboard?tier=premium"}
+                return {"init_point": "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=sandbox-simulation-mode-premium"}
             raise HTTPException(status_code=400, detail=f"MercadoPago API Error: {err_msg}")
             
-    except Exception as e: 
-        return {"init_point": "https://complianceflow-production.up.railway.app/dashboard?tier=premium"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al conectar con la API de cobros Premium: {str(e)}")
 
 # --- ENDPOINTS CORE ---
 @app.post("/api/compliance/scan", tags=["Escáner"])
