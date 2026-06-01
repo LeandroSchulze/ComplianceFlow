@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enterprise Dashboard | ComplianceFlow</title>
+    <!-- Tailwind CSS v4 Engine -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         .glass-panel {
@@ -14,7 +15,31 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-teal-500/30 selection:text-teal-200">
 
+    <!-- MODAL DE CUOTA AGOTADA INTERACTIVO -->
+    <div id="modalCuota" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-sm mx-4 shadow-2xl relative">
+            <div class="text-center space-y-4">
+                <div class="bg-rose-500/10 text-rose-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto border border-rose-500/20 text-xl">
+                    ⚠️
+                </div>
+                <h3 class="text-lg font-bold text-slate-100">Cuota de Pruebas Agotada</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Alcanzaste el límite de 3 escaneos gratuitos por IP. Para seguir auditando tus reglamentaciones, descargar evidencias oficiales y activar el Copiloto de IA, debés adquirir un plan corporativo.
+                </p>
+                <div class="pt-2 space-y-2">
+                    <button onclick="cerrarModalYSubir()" class="w-full bg-gradient-to-r from-teal-400 to-cyan-400 text-slate-950 font-black py-2.5 rounded-xl text-xs hover:from-teal-300 hover:to-cyan-300 transition-all shadow-lg cursor-pointer">
+                        Ver Planes de Activación 🚀
+                    </button>
+                    <button onclick="document.getElementById('modalCuota').classList.add('hidden')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 font-medium py-2 rounded-xl text-xs transition cursor-pointer">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div>
+        <!-- NAV BAR PREMIUM -->
         <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex justify-between items-center shadow-2xl">
             <div class="flex items-center space-x-3">
                 <div class="bg-teal-500/10 p-2 rounded-xl border border-teal-500/20 shadow-inner">
@@ -46,7 +71,8 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
             
-            <div id="bannerPrecios" class="mb-10 p-6 rounded-2xl glass-panel border border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+            <!-- BANNER DE TARIFAS SEGMENTADAS EN USD -->
+            <div id="bannerPrecios" class="mb-10 p-6 rounded-2xl glass-panel border border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden transition-all duration-300">
                 <div class="absolute -right-20 -bottom-20 w-60 h-60 bg-gradient-to-br from-teal-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
                 <div>
                     <span class="bg-teal-500/10 text-teal-400 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase border border-teal-500/20">Planes de Activación</span>
@@ -63,6 +89,7 @@
                 </div>
             </div>
 
+            <!-- SUITE GENERAL (REPOSITORIO DE CONTROLES) -->
             <div id="vistaSuite" class="transition-all duration-300">
                 <div class="mb-8">
                     <h2 class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400">Suite de Control de Evidencias B2B</h2>
@@ -70,6 +97,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- ISO 27001 -->
                     <div onclick="verEstandar('ISO 27001', 'Anexo A.9 (Control de Accesos)', 'ISO-IAM')" class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
                         <div>
                             <div class="flex justify-between items-center">
@@ -84,6 +112,7 @@
                         <span class="text-xs text-teal-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control →</span>
                     </div>
 
+                    <!-- SOC 2 -->
                     <div onclick="verEstandar('SOC 2', 'Sección CC6.3 (Seguridad en Nube)', 'SOC2-S3')" class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
                         <div>
                             <div class="flex justify-between items-center">
@@ -98,6 +127,7 @@
                         <span class="text-xs text-teal-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control →</span>
                     </div>
 
+                    <!-- SOC 1 -->
                     <div onclick="verEstandar('SOC 1', 'Controles Internos Financieros (ICFR)', 'SOC1-FIN')" class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
                         <div>
                             <div class="flex justify-between items-center">
@@ -112,6 +142,7 @@
                         <span class="text-xs text-teal-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control →</span>
                     </div>
 
+                    <!-- ISO 9001 -->
                     <div onclick="verEstandar('ISO 9001', 'Cláusula 8.2 (Requisitos de Calidad)', 'ISO-9001')" class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
                         <div>
                             <div class="flex justify-between items-center">
@@ -128,7 +159,8 @@
                 </div>
             </div>
 
-            <div id="vistaDetalle" class="hidden space-y-8 animate-fade-in">
+            <!-- PANEL DE DETALLE EXCLUSIVO -->
+            <div id="vistaDetalle" class="hidden space-y-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 p-5 rounded-2xl border border-slate-800">
                     <div>
                         <button onclick="volverASuite()" class="text-xs font-bold text-slate-400 hover:text-white transition-colors mb-2.5 flex items-center bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 cursor-pointer">
@@ -163,6 +195,7 @@
                         </div>
                     </div>
 
+                    <!-- COPILOTO CON INTELIGENCIA ARTIFICIAL -->
                     <div class="lg:col-span-5 bg-slate-900 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between shadow-xl relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-gradient-to-l from-teal-500/10 to-transparent w-full h-full pointer-events-none"></div>
                         <div>
@@ -191,17 +224,19 @@
                     </div>
                 </div>
 
+                <!-- RESULTADOS DE LA INTELIGENCIA ARTIFICIAL -->
                 <div id="bloqueResultadoIA" class="hidden bg-slate-900 rounded-2xl border border-teal-500/20 p-6 shadow-2xl relative overflow-hidden">
                     <h4 class="text-xs font-black tracking-widest text-teal-400 uppercase mb-4 flex items-center">
                         <span class="animate-pulse mr-2 h-2 w-2 rounded-full bg-teal-400 inline-block"></span> Diagnóstico Computado por Copiloto IA
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-slate-400 font-bold block mb-1">🔍 Diagnóstico Profundo</span><p id="iaDiagnostico" class="text-slate-300">Procesando...</p></div>
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-amber-400 font-bold block mb-1">🛠️ Remediación Técnico</span><p id="iaGaps" class="text-slate-300 whitespace-pre-line">Procesando...</p></div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-amber-400 font-bold block mb-1">🛠️ Remediación Técnica</span><p id="iaGaps" class="text-slate-300 whitespace-pre-line">Procesando...</p></div>
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-cyan-400 font-bold block mb-1">🎯 Blindaje ante Auditor</span><p id="iaTip" class="text-slate-300 italic">Procesando...</p></div>
                     </div>
                 </div>
 
+                <!-- HISTÓRICO DE EVIDENCIAS -->
                 <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex justify-between items-start border-b border-slate-800 pb-4 mb-4">
                         <div><h3 id="txtCardTitulo" class="text-base font-bold text-slate-100">Reporte</h3></div>
@@ -226,6 +261,7 @@
         </div>
     </div>
 
+    <!-- FOOTER CORPORATIVO -->
     <footer class="bg-slate-900 border-t border-slate-800 mt-20 py-6 px-6 text-center text-xs text-slate-500">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <p>© 2026 ComplianceFlow. Todos los derechos reservados. Evidencias criptográficas inalterables firmadas en la red corporativa.</p>
@@ -237,13 +273,14 @@
         </div>
     </footer>
 
+    <!-- LOGICA DEL DASHBOARD JS -->
     <script>
         let estandarActivoId = "";
         let tienePagoActivo = false;
 
-        // INCLUIDO MAPEO EXTENSO DE METADATOS PARA ISO 9001
         const datosEstandares = {
             "ISO-IAM": { titulo: "ISO 27001", sub: "Anexo A.9 — Sistema de Gestión de Seguridad (SGSI)", cardTitulo: "Evidencia de Políticas e Identidades de Acceso", descripcion: "Mapeo integral de usuarios y políticas asignadas en tu consola de administración. Revisa de forma constante que ningún perfil posea accesos elevados sin MFA.", estado: "⚠️ OBSERVACIÓN DETECTADA", estadoClass: "bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-bold", fecha: "2026-05-25 14:20 UTC", hash: "0a9b8c7d6e8f4a2b1c3d9e8f7a6b5c4d3e2f1a0b", origen: "AWS IAM API Fetch" },
+            "SOC2-S3": { titulo: "SOC 2 (Type II)", sub: "Trust Services Criteria — Sección CC6.3", cardTitulo: "Evidencia de Infraestructura de Almacenamiento", descripcion: "Este reporte contiene los registros criptográficos detallados extraídos de tus buckets de Amazon S3. Certifica la activación del bloqueo de accesos públicos globales.", estado: "🟢 100% CUMPLIDO", estadoClass: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold", fecha: "2026-05-26 07:34 UTC", hash: "f3c8a9e2d1b5c4a7e9f8d7c6b5a4f3e2d1c0b9a8", origen: "AWS IAM-Role Auth" },
             "SOC2-S3": { titulo: "SOC 2 (Type II)", sub: "Trust Services Criteria — Sección CC6.3", cardTitulo: "Evidencia de Infraestructura de Almacenamiento", descripcion: "Este reporte contiene los registros criptográficos detallados extraídos de tus buckets de Amazon S3. Certifica la activación del bloqueo de accesos públicos globales.", estado: "🟢 100% CUMPLIDO", estadoClass: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold", fecha: "2026-05-26 07:34 UTC", hash: "f3c8a9e2d1b5c4a7e9f8d7c6b5a4f3e2d1c0b9a8", origen: "AWS IAM-Role Auth" },
             "SOC1-FIN": { titulo: "SOC 1 ICFR", sub: "Internal Control over Financial Reporting", cardTitulo: "Matriz de Controles de Acceso a Gestión Financiera", descripcion: "Certificación automática de segregación de funciones (SoD). Valida que las cuentas que autorizan egresos posean trazas de auditoría firmadas digitalmente.", estado: "🟢 100% CUMPLIDO", estadoClass: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold", fecha: "2026-05-26 11:15 UTC", hash: "8e92c4b1a7d6f5e4c3b2a1f0e9d8c7b6a5f4e3d2", origen: "PostgreSQL Audit Table" },
             "ISO-9001": { titulo: "ISO 9001", sub: "Cláusula 8.2 — Trazabilidad de Requisitos de Calidad", cardTitulo: "Evidencia de Control y Aseguramiento de Calidad (QA)", descripcion: "Validación automatizada de firmas hash en artefactos y entregables de software dentro del pipeline de integración continua. Certifica la aprobación cruzada digital inalterable de QA.", estado: "🟢 100% CUMPLIDO", estadoClass: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold", fecha: "2026-06-01 01:10 UTC", hash: "4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c", origen: "CI/CD Pipeline QA Sign" }
@@ -272,6 +309,7 @@
             document.getElementById('vistaSuite').classList.remove('hidden');
         }
 
+        // CONTROLADOR DE AUDITORÍA CON INTERCEPTOR DE REGLA FREEMIUM (MODAL EN PANTALLA)
         async function simularAnalisis() {
             const msg = document.getElementById('txtProcesando');
             msg.classList.remove('hidden');
@@ -282,15 +320,33 @@
                     body: JSON.stringify({ cliente_nombre: "Matriz de Infraestructura Conectada", norma_id: estandarActivoId })
                 });
                 msg.classList.add('hidden');
+                
+                // DISPARADOR DE ALERTA VISUAL INTEGRADA POR CUMPLIMIENTO DE CUOTA (ERROR 402)
+                if (response.status === 402) {
+                    document.getElementById('modalCuota').classList.remove('hidden');
+                    return;
+                }
+
                 if (response.ok) {
                     alert("✅ Auditoría estructural completada con éxito.");
                 } else {
-                    alert("⚠️ No se pudo procesar de forma gratuita. Verifique su suscripción.");
+                    const errData = await response.json();
+                    alert("⚠️ Error en Servidor: " + (errData.detail || "Fallo técnico"));
                 }
             } catch (err) {
                 msg.classList.add('hidden');
-                alert("Error: " + err.message);
+                alert("Error de red: " + err.message);
             }
+        }
+
+        function cerrarModalYSubir() {
+            document.getElementById('modalCuota').classList.add('hidden');
+            document.getElementById('bannerPrecios').scrollIntoView({ behavior: 'smooth' });
+            
+            // Efecto visual temporal de resaltado perimetral para inducir el clic en MercadoPago
+            const banner = document.getElementById('bannerPrecios');
+            banner.classList.add('ring-2', 'ring-teal-400');
+            setTimeout(() => banner.classList.remove('ring-2', 'ring-teal-400'), 3500);
         }
 
         async function invocarCopilotoIA() {
