@@ -198,6 +198,18 @@ def crear_preferencia_individual():
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error pasarela individual: {str(e)}")
+       
+        @app.post("/api/checkout/preference/individual", tags=["Financiero"])
+def crear_preferencia_individual():
+    global TIPO_CAMBIO
+    try:
+        token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
+        
+        # 👇 AGREGÁ ESTA LÍNEA DE CONTROL ACÁ ABAJO 👇
+        print(f"⚠️ [MONITOR MP] El token real que está leyendo la app empieza con: {token[:12]}...")
+        
+        sdk_dinamico = mercadopago.SDK(token)
+        # ... (todo el resto del código sigue igual)
 
 @app.post("/api/checkout/preference/premium", tags=["Financiero"])
 def crear_preferencia_premium():
