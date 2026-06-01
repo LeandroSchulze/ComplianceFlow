@@ -35,10 +35,8 @@ auth_handler = AuthManager()
 # ==========================================
 router = APIRouter()
 
-# Este token secreto lo definís vos en las variables de Railway de las 3 apps
 TOKEN_INTERNO_SECRETO = os.getenv("TOKEN_SISTEMAS_SECRETO")
 
-# Convertimos la cotización base de forma segura limpiando espacios remanentes
 raw_cotizacion = os.getenv("COTIZACION", "1000.0").strip()
 try:
     TIPO_CAMBIO = float(raw_cotizacion)
@@ -49,7 +47,6 @@ except ValueError:
 def actualizar_tipo_cambio_interno(payload: dict, x_internal_token: str = Header(None)):
     global TIPO_CAMBIO
     
-    # Validamos que la petición venga realmente de tu Panel Central
     if x_internal_token != TOKEN_INTERNO_SECRETO or not TOKEN_INTERNO_SECRETO:
         raise HTTPException(status_code=401, detail="No autorizado")
     
@@ -57,7 +54,6 @@ def actualizar_tipo_cambio_interno(payload: dict, x_internal_token: str = Header
     if nuevo_tc is None or not isinstance(nuevo_tc, (int, float)):
         raise HTTPException(status_code=400, detail="Valor de TC inválido")
     
-    # Se actualiza en la memoria del servidor de la app en vivo
     TIPO_CAMBIO = float(nuevo_tc)
     return {"status": "actualizado", "nuevo_tipo_cambio": TIPO_CAMBIO}
 
@@ -83,7 +79,6 @@ class BillingAlertRequest(BaseModel):
     email: EmailStr
     dias_restantes: int
 
-# Repositorio maestro de estandares y evidencias (Incluye ISO 9001)
 DATA_ESTANDARES = {
     "ISO-IAM": {"norma": "ISO 27001 — Anexo A.9", "titulo": "Auditoría de Control de Accesos", "evidencia_id": "EV-ISO-A9-8812", "estado": "⚠️ OBSERVACIÓN DETECTADA", "detalle": "Políticas AdministratorAccess asignadas a cuentas de desarrollo sin MFA activo."},
     "SOC2-S3": {"norma": "SOC 2 Type II — CC6.3", "titulo": "Análisis Criptográfico S3", "evidencia_id": "EV-SOC2-S3-9202", "estado": "🟢 100% CUMPLIDO", "detalle": "Public Access Block activo y cifrado SSE-S3 de forma persistente."},
@@ -168,15 +163,18 @@ def obtener_ayuda_copilot_ia(solicitud: AICopilotRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # =====================================================================
-# 💳 PASARELAS DE COBRO NUEVAS APUNTANDO A WWW.COMPLIANCEFLOW.ME
+# 💳 PASARELA INDIVIDUAL (CON LOG DE DIAGNÓSTICO INTEGRADO)
 # =====================================================================
 @app.post("/api/checkout/preference/individual", tags=["Financiero"])
 def crear_preferencia_individual():
     global TIPO_CAMBIO
     try:
         token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
-        sdk_dinamico = mercadopago.SDK(token)
         
+        # MONITOR EN CONSOLE LOGS PARA ASEGURARNOS QUÉ TIENE RAILWAY EN MEMORIA
+        print(f"⚠️ [MONITOR MP] El token real que está leyendo la app empieza con: {token[:12]}...")
+        
+        sdk_dinamico = mercadopago.SDK(token)
         precio_final_ars = float(20.0 * TIPO_CAMBIO)
         
         preference_data = {
@@ -198,18 +196,6 @@ def crear_preferencia_individual():
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error pasarela individual: {str(e)}")
-       
-        @app.post("/api/checkout/preference/individual", tags=["Financiero"])
-def crear_preferencia_individual():
-    global TIPO_CAMBIO
-    try:
-        token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
-        
-        # 👇 AGREGÁ ESTA LÍNEA DE CONTROL ACÁ ABAJO 👇
-        print(f"⚠️ [MONITOR MP] El token real que está leyendo la app empieza con: {token[:12]}...")
-        
-        sdk_dinamico = mercadopago.SDK(token)
-        # ... (todo el resto del código sigue igual)
 
 @app.post("/api/checkout/preference/premium", tags=["Financiero"])
 def crear_preferencia_premium():
@@ -245,11 +231,10 @@ def crear_preferencia_premium():
 # =====================================================================
 @app.post("/api/billing/send-alert", tags=["Financiero"])
 def enviar_alerta_pago(solicitud: BillingAlertRequest):
-    """Lanza un aviso preventivo para recordar la fecha de vencimiento de la licencia"""
     try:
         mensaje_trazabilidad = f"Alerta de facturación preventiva enviada por email a: {solicitud.email}. Días remanentes: {solicitud.dias_restantes}."
         registrar_evento(mensaje_trazabilidad)
-        return {"status": "alerta_enviada", "destinatario": solicitud.email, "dias_restantes": solicitud.dias_restantes}
+        return {"status": "alerta_enviada", "destinatario": solicitation.email, "dias_restantes": solicitud.dias_restantes}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Fallo al emitir aviso de renovación: {str(e)}")
 
@@ -343,5 +328,4 @@ def login(usuario: UserLogin):
         raise HTTPException(status_code=401, detail="MFA inválido.")
     return {"mensaje": "Acceso concedido"}
 
-# REGISTRO EXPLÍCITO DEL ROUTER DE ACTUALIZACIÓN
 app.include_router(router)
