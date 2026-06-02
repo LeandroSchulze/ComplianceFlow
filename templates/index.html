@@ -19,7 +19,6 @@
             <h2 class="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">Automatizá la recolección de evidencia para tus auditorías</h2>
             <p class="text-slate-400 text-base max-w-2xl mx-auto mb-10">Pasá tus certificaciones de forma ágil. Subí tus archivos técnicos de infraestructura o gobernanza y obtené un análisis de brechas instantáneo.</p>
 
-            <!-- RECUADRO DE ESCÁNER DE CONVERSIÓN FREEMIUM ACTUALIZADO (Captura de pantalla 2026-06-01 023144.jpg) -->
             <div class="bg-slate-800 p-8 rounded-2xl max-w-md mx-auto shadow-2xl border border-slate-700 text-left">
                 <h3 class="text-lg font-bold mb-2 text-teal-400">Escáner de Cumplimiento Gratuito</h3>
                 <p class="text-xs text-slate-400 mb-6">Cargá un archivo de configuración, políticas o logs de tu sistema para verificar su alineación regulatoria.</p>
@@ -35,7 +34,6 @@
                         </select>
                     </div>
 
-                    <!-- INPUT DE ARCHIVO INTERACTIVO (REEMPLAZA AL TEXTO DE LA EMPRESA) -->
                     <div>
                         <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Documento o Log de Sistema</label>
                         <div class="relative border-2 border-dashed border-slate-600 hover:border-teal-400 rounded-lg p-4 bg-slate-900 text-center cursor-pointer transition">
@@ -56,7 +54,6 @@
         </main>
     </div>
 
-    <!-- FOOTER -->
     <footer class="text-center py-6 text-xs text-slate-600 border-t border-slate-800/60 bg-slate-900/40 w-full mt-12">
         © 2026 ComplianceFlow. Ecosistema de control y trazas automatizadas.
     </footer>
@@ -86,13 +83,18 @@
             btn.disabled = true;
             status.classList.remove('hidden');
             status.className = "mt-4 text-xs text-center text-teal-400 animate-pulse";
-            status.innerText = "Cruzando hashes del archivo contra los requerimientos globales...";
+            status.innerText = "Ingestando documento y buscando vulnerabilidades en el código...";
+
+            // Creamos un FormData nativo para enviar el archivo binario real
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('norma_id', norma);
 
             try {
+                // Ya NO enviamos Content-Type, el navegador lo asigna automáticamente al usar FormData
                 const response = await fetch('/api/compliance/scan', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cliente_nombre: `Archivo: ${fileName}`, norma_id: norma })
+                    body: formData
                 });
 
                 // MANEJO DE LÍMITE GRATUITO (3 MÁXIMO POR IP)
