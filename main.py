@@ -272,4 +272,32 @@ def dashboard(): return FileResponse("templates/dashboard.html")
 @app.get("/login", response_class=HTMLResponse)
 def mostrar_login(): return FileResponse("templates/login.html")
 
+# --- VISTAS HTML ---
+@app.get("/", response_class=HTMLResponse)
+def index(): return FileResponse("templates/index.html")
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard(): return FileResponse("templates/dashboard.html")
+
+@app.get("/login", response_class=HTMLResponse)
+def mostrar_login(): return FileResponse("templates/login.html")
+
+# 👇 ESTO ES LO QUE FALTA AGREGAR 👇
+# --- AUTENTICACIÓN ---
+@app.post("/api/auth/register", status_code=status.HTTP_201_CREATED, tags=["Autenticación"])
+def registrar(usuario: UserRegister):
+    try:
+        mfa_secret = auth_handler.registrar_usuario(usuario.email, usuario.password)
+        return {"mensaje": "Usuario registrado exitosamente", "mfa_secret": mfa_secret}
+    except Exception as e: 
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/auth/login", tags=["Autenticación"])
+def login(usuario: UserLogin):
+    codigo_limpio = usuario.codigo_mfa.replace(" ", "").replace("-", "").strip()
+    if not auth_handler.verificar_mfa(usuario.email, codigo_limpio):
+        raise HTTPException(status_code=401, detail="MFA inválido.")
+    return {"mensaje": "Acceso concedido"}
+# 👆 HASTA ACÁ 👆
+
 app.include_router(router)
