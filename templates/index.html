@@ -6,8 +6,10 @@
     <title>ComplianceFlow | AI Compliance Auditor</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-slate-900 text-white font-sans min-h-screen flex flex-col justify-between relative overflow-x-hidden">
     
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
+
     <div>
         <nav class="max-w-6xl mx-auto p-6 flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wider text-teal-400">🛡️ COMPLIANCEFLOW</h1>
@@ -26,7 +28,7 @@
                 <form id="scanForm" class="space-y-4">
                     <div>
                         <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Reglamentación a Auditar</label>
-                        <select id="normaId" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm">
+                        <select id="normaId" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-teal-400 text-sm transition-colors">
                             <option value="ISO-IAM">ISO 27001 (Control de Accesos)</option>
                             <option value="SOC2-S3">SOC 2 Type II (Seguridad en Nube)</option>
                             <option value="SOC1-FIN">SOC 1 ICFR (Matriz Financiera)</option>
@@ -36,17 +38,17 @@
 
                     <div>
                         <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Documento o Log de Sistema</label>
-                        <div class="relative border-2 border-dashed border-slate-600 hover:border-teal-400 rounded-lg p-4 bg-slate-900 text-center cursor-pointer transition">
-                            <input type="file" id="auditFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="actualizarNombreArchivo(this)">
-                            <div class="space-y-1">
-                                <span class="text-xl block">📁</span>
-                                <p id="fileLabel" class="text-xs text-slate-400 font-medium">Hacé clic o arrastrá un archivo (.txt, .log, .json)</p>
+                        <div id="dropzone" class="relative border-2 border-dashed border-slate-600 hover:border-teal-400 rounded-lg p-6 bg-slate-900 text-center cursor-pointer transition-all duration-300 group">
+                            <input type="file" id="auditFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="actualizarNombreArchivo(this)">
+                            <div class="space-y-2 transform group-hover:scale-105 transition-transform duration-300">
+                                <span class="text-3xl block text-slate-500 group-hover:text-teal-400">📁</span>
+                                <p id="fileLabel" class="text-xs text-slate-400 font-medium">Hacé clic o arrastrá un archivo acá<br><span class="text-[10px] text-slate-500">(.txt, .log, .json)</span></p>
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" id="btnScan" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold p-3 rounded-lg transition duration-200 text-sm cursor-pointer mt-2">
-                        Escanear y Descargar Reporte (PDF)
+                    <button type="submit" id="btnScan" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold p-3 rounded-lg transition duration-200 text-sm cursor-pointer mt-2 flex items-center justify-center">
+                        <span id="btnText">Escanear y Descargar Reporte</span>
                     </button>
                 </form>
                 <div id="statusMsg" class="mt-4 text-xs text-center font-medium hidden"></div>
@@ -59,54 +61,96 @@
     </footer>
 
     <script>
+        // LÓGICA DE TOASTS FLOTANTES
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const color = type === 'success' ? 'emerald' : (type === 'error' ? 'rose' : 'amber');
+            const icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : '⚠️');
+            toast.className = `bg-slate-800 border border-${color}-500/50 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform transition-all duration-300 translate-x-[120%]`;
+            toast.innerHTML = `<span class="text-lg">${icon}</span><p class="text-xs font-medium">${message}</p>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-x-[120%]'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-[120%]', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // LÓGICA DE DROPZONE VIVA
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('auditFile');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => {
+                dropzone.classList.add('border-teal-400', 'bg-teal-900/20');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => {
+                dropzone.classList.remove('border-teal-400', 'bg-teal-900/20');
+            }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            fileInput.files = e.dataTransfer.files;
+            actualizarNombreArchivo(fileInput);
+        });
+
         function actualizarNombreArchivo(input) {
             const label = document.getElementById('fileLabel');
             if (input.files && input.files.length > 0) {
-                label.innerText = `📄 Seleccionado: ${input.files[0].name}`;
-                label.className = "text-xs text-teal-400 font-bold font-mono";
+                label.innerHTML = `📄 <span class="text-teal-400 font-bold font-mono">${input.files[0].name}</span><br><span class="text-[10px] text-teal-500/70">Listo para analizar</span>`;
+                dropzone.classList.add('border-teal-500/50', 'bg-teal-950/30');
             } else {
-                label.innerText = "Hacé clic o arrastrá un archivo (.txt, .log, .json)";
-                label.className = "text-xs text-slate-400 font-medium";
+                label.innerHTML = "Hacé clic o arrastrá un archivo acá<br><span class="text-[10px] text-slate-500">(.txt, .log, .json)</span>";
+                dropzone.classList.remove('border-teal-500/50', 'bg-teal-950/30');
             }
         }
 
         document.getElementById('scanForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const fileInput = document.getElementById('auditFile');
             const norma = document.getElementById('normaId').value;
             const btn = document.getElementById('btnScan');
+            const btnText = document.getElementById('btnText');
             const status = document.getElementById('statusMsg');
 
             if (!fileInput.files || fileInput.files.length === 0) return;
             const fileName = fileInput.files[0].name;
 
+            // ANIMACIÓN DE CARGA EN BOTÓN
             btn.disabled = true;
-            status.classList.remove('hidden');
-            status.className = "mt-4 text-xs text-center text-teal-400 animate-pulse";
-            status.innerText = "Ingestando documento y buscando vulnerabilidades en el código...";
+            const originalText = btnText.innerText;
+            btnText.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analizando documento...`;
+            
+            status.classList.add('hidden');
 
-            // Creamos un FormData nativo para enviar el archivo binario real
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
             formData.append('norma_id', norma);
 
             try {
-                // Ya NO enviamos Content-Type, el navegador lo asigna automáticamente al usar FormData
                 const response = await fetch('/api/compliance/scan', {
                     method: 'POST',
                     body: formData
                 });
 
-                // MANEJO DE LÍMITE GRATUITO (3 MÁXIMO POR IP)
                 if (response.status === 402) {
-                    status.className = "mt-4 p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-center text-rose-300 space-y-2.5";
+                    status.classList.remove('hidden');
+                    status.className = "mt-4 p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-center text-rose-300 space-y-2.5 animate-fade-in";
                     status.innerHTML = `
                         <p class="font-bold">⚠️ Cuota Freemium Agotada (3 de 3 por IP)</p>
-                        <p class="text-slate-400 text-[11px]">Para auditar nuevos documentos sin restricciones y activar el Copiloto de Inteligencia Artificial, necesitás una cuenta activa.</p>
-                        <a href="/login" class="inline-block mt-1 w-full bg-gradient-to-r from-teal-400 to-cyan-400 text-slate-950 font-black py-2.5 rounded-lg text-center hover:from-teal-300 hover:to-cyan-300 transition-all shadow-lg">
-                            Registrarse y Elegir Plan 🚀
-                        </a>
+                        <p class="text-slate-400 text-[11px]">Para auditar nuevos documentos sin restricciones, necesitás una cuenta activa.</p>
+                        <a href="/login" class="inline-block mt-1 w-full bg-gradient-to-r from-teal-400 to-cyan-400 text-slate-950 font-black py-2.5 rounded-lg text-center hover:from-teal-300 hover:to-cyan-300 transition-all shadow-lg">Registrarse y Elegir Plan 🚀</a>
                     `;
+                    showToast("Límite de uso alcanzado", "error");
                     return;
                 }
 
@@ -119,18 +163,16 @@
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
-                    status.className = "mt-4 p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-xs text-center text-emerald-400";
-                    status.innerText = "✅ Reporte de cumplimiento descargado con éxito.";
+                    showToast("Reporte descargado exitosamente", "success");
                 } else {
                     const err = await response.json();
-                    status.className = "mt-4 text-xs text-center text-rose-400";
-                    status.innerText = `❌ Error: ${err.detail || 'Fallo al procesar el archivo.'}`;
+                    showToast(err.detail || 'Fallo al procesar el archivo', "error");
                 }
             } catch (error) {
-                status.className = "mt-4 text-xs text-center text-rose-400";
-                status.innerText = "❌ Error en conexión con el servidor.";
+                showToast("Error en conexión con el servidor.", "error");
             } finally {
                 btn.disabled = false;
+                btnText.innerHTML = originalText;
             }
         });
     </script>
