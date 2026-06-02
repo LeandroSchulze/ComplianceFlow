@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enterprise Dashboard | ComplianceFlow</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- LIBRERÍA PARA EL GRÁFICO CIRCULAR -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .glass-panel { background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%); backdrop-filter: blur(12px); }
@@ -15,12 +16,16 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden">
 
+    <!-- CONTENEDOR DE TOASTS -->
     <div id="toast-container" class="fixed top-20 sm:top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
+    <!-- MODAL DE CUOTA AGOTADA INTERACTIVO -->
     <div id="modalCuota" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-sm mx-4 shadow-2xl relative">
             <div class="text-center space-y-4">
-                <div class="bg-rose-500/10 text-rose-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto border border-rose-500/20 text-xl">⚠️</div>
+                <div class="bg-rose-500/10 text-rose-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto border border-rose-500/20">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                </div>
                 <h3 class="text-lg font-bold text-slate-100">Cuota de Pruebas Agotada</h3>
                 <p class="text-xs text-slate-400 leading-relaxed">Alcanzaste el límite de 3 escaneos gratuitos por IP. Para seguir auditando tus reglamentaciones, descargar evidencias oficiales y activar el Copiloto de IA, debés adquirir un plan corporativo.</p>
                 <div class="pt-2 space-y-2">
@@ -34,8 +39,8 @@
     <div>
         <nav class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5 flex justify-between items-center shadow-2xl">
             <div class="flex items-center space-x-3">
-                <div class="bg-teal-500/10 p-2 rounded-xl border border-teal-500/20 shadow-inner">
-                    <span class="text-xl block leading-none">🛡️</span>
+                <div class="bg-teal-500/10 p-2 rounded-xl border border-teal-500/20 shadow-inner text-teal-400">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 </div>
                 <div>
                     <h1 class="text-base font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">COMPLIANCEFLOW</h1>
@@ -55,23 +60,25 @@
         </nav>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-            <div id="bannerPrecios" class="mb-10 p-6 rounded-2xl glass-panel border border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden transition-all duration-300">
+            <!-- BANNER DE TARIFAS REDISEÑADO -->
+            <div id="bannerPrecios" class="mb-10 p-8 md:p-10 rounded-3xl glass-panel border border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden transition-all duration-300">
                 <div class="absolute -right-20 -bottom-20 w-60 h-60 bg-gradient-to-br from-teal-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
-                <div>
+                <div class="z-10 relative">
                     <span class="bg-teal-500/10 text-teal-400 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase border border-teal-500/20">Planes de Activación</span>
-                    <h2 class="text-xl font-bold mt-2 text-slate-100">Activá tu acceso corporativo definitivo</h2>
-                    <p class="text-xs text-slate-400 mt-1">Desbloqueá la descarga oficial de evidencias firmadas digitalmente y el Copiloto IA Auditor.</p>
+                    <h2 class="text-2xl font-bold mt-3 text-slate-100">Activá tu acceso corporativo definitivo</h2>
+                    <p class="text-sm text-slate-400 mt-2 max-w-lg">Desbloqueá la descarga oficial de evidencias firmadas digitalmente y el Copiloto IA Auditor.</p>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto z-10">
-                    <button onclick="pagarPlanIndividual()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-4 py-3 rounded-xl transition duration-200 cursor-pointer shadow-md text-center">
+                <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto z-10 relative mt-4 md:mt-0">
+                    <button onclick="pagarPlanIndividual()" class="bg-transparent hover:bg-slate-800/50 text-slate-300 border-2 border-slate-700 hover:border-teal-500/50 text-xs font-bold px-5 py-3 rounded-xl transition duration-300 cursor-pointer text-center">
                         Pase Express (1 Reporte) <span class="text-teal-400 block text-[11px] font-mono font-bold mt-0.5">$20 USD</span>
                     </button>
-                    <button onclick="pagarPlanPremium()" class="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 text-xs font-black px-5 py-3 rounded-xl transition duration-200 cursor-pointer shadow-lg shadow-teal-500/10 text-center">
+                    <button onclick="pagarPlanPremium()" class="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 text-xs font-black px-6 py-3 rounded-xl transition duration-200 cursor-pointer shadow-lg shadow-teal-500/20 ring-2 ring-teal-500/30 ring-offset-2 ring-offset-slate-900 text-center">
                         Licencia Enterprise + Copiloto IA <span class="text-slate-900 block text-[11px] font-mono font-black mt-0.5">$50 USD</span>
                     </button>
                 </div>
             </div>
 
+            <!-- SUITE GENERAL CON SVGs VECTORES -->
             <div id="vistaSuite" class="transition-all duration-300">
                 <div class="mb-6">
                     <h2 class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400">Suite de Control de Evidencias B2B</h2>
@@ -83,53 +90,62 @@
                     <div onclick="verEstandar('ISO 27001', 'Anexo A.9 (Control de Accesos)', 'ISO-IAM', 85)" class="w-[85vw] sm:w-[45vw] lg:w-auto shrink-0 snap-center bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
                         <div>
                             <div class="flex justify-between items-center">
-                                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 group-hover:bg-slate-800/50 group-hover:border-teal-500/40 transition"><span class="text-xl block leading-none">🔒</span></div>
+                                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 group-hover:bg-slate-800/50 group-hover:border-teal-500/40 transition">
+                                    <svg class="w-6 h-6 text-slate-300 group-hover:text-teal-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                </div>
                                 <span class="text-[9px] font-bold tracking-wider text-slate-400 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800 font-mono uppercase">Seguridad IT</span>
                             </div>
                             <h3 class="text-base font-bold mt-4 text-slate-200 group-hover:text-teal-400 transition-colors">ISO 27001</h3>
                             <p class="text-xs text-slate-400 mt-2 line-clamp-2">Seguridad de la información, gestión de activos y políticas de accesos corporativos en la nube.</p>
                         </div>
-                        <span class="text-xs text-teal-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control →</span>
+                        <span class="text-xs text-teal-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control &rarr;</span>
                     </div>
 
-                    <div onclick="verEstandar('SOC 2', 'Sección CC6.3 (Seguridad en Nube)', 'SOC2-S3', 92)" class="w-[85vw] sm:w-[45vw] lg:w-auto shrink-0 snap-center bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
+                    <div onclick="verEstandar('SOC 2', 'Sección CC6.3 (Seguridad en Nube)', 'SOC2-S3', 92)" class="w-[85vw] sm:w-[45vw] lg:w-auto shrink-0 snap-center bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-cyan-400 hover:shadow-cyan-500/5">
                         <div>
                             <div class="flex justify-between items-center">
-                                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 group-hover:bg-slate-800/50 group-hover:border-teal-500/40 transition"><span class="text-xl block leading-none">☁️</span></div>
+                                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 group-hover:bg-slate-800/50 group-hover:border-cyan-500/40 transition">
+                                    <svg class="w-6 h-6 text-slate-300 group-hover:text-cyan-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
+                                </div>
                                 <span class="text-[9px] font-bold tracking-wider text-cyan-400 bg-cyan-950/20 px-2.5 py-1 rounded-md border border-cyan-900/40 font-mono uppercase">Cloud SaaS</span>
                             </div>
-                            <h3 class="text-base font-bold mt-4 text-slate-200 group-hover:text-teal-400 transition-colors">SOC 2 (Type II)</h3>
+                            <h3 class="text-base font-bold mt-4 text-slate-200 group-hover:text-cyan-400 transition-colors">SOC 2 (Type II)</h3>
                             <p class="text-xs text-slate-400 mt-2 line-clamp-2">Auditoría automatizada de infraestructura de nube, buckets S3 y encriptación de datos.</p>
                         </div>
-                        <span class="text-xs text-teal-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control →</span>
+                        <span class="text-xs text-cyan-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control &rarr;</span>
                     </div>
 
-                    <div onclick="verEstandar('SOC 1', 'Controles Internos Financieros (ICFR)', 'SOC1-FIN', 98)" class="w-[85vw] sm:w-[45vw] lg:w-auto shrink-0 snap-center bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
+                    <div onclick="verEstandar('SOC 1', 'Controles Internos Financieros (ICFR)', 'SOC1-FIN', 98)" class="w-[85vw] sm:w-[45vw] lg:w-auto shrink-0 snap-center bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-amber-400 hover:shadow-amber-500/5">
                         <div>
                             <div class="flex justify-between items-center">
-                                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 group-hover:bg-slate-800/50 group-hover:border-teal-500/40 transition"><span class="text-xl block leading-none">📊</span></div>
+                                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 group-hover:bg-slate-800/50 group-hover:border-amber-500/40 transition">
+                                    <svg class="w-6 h-6 text-slate-300 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                </div>
                                 <span class="text-[9px] font-bold tracking-wider text-amber-400 bg-amber-950/20 px-2.5 py-1 rounded-md border border-amber-900/30 font-mono uppercase">Financiero</span>
                             </div>
-                            <h3 class="text-base font-bold mt-4 text-slate-200 group-hover:text-teal-400 transition-colors">SOC 1 Suite</h3>
+                            <h3 class="text-base font-bold mt-4 text-slate-200 group-hover:text-amber-400 transition-colors">SOC 1 Suite</h3>
                             <p class="text-xs text-slate-400 mt-2 line-clamp-2">Evaluación de controles internos relacionados con los reportes y balances financieros.</p>
                         </div>
-                        <span class="text-xs text-teal-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control →</span>
+                        <span class="text-xs text-amber-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control &rarr;</span>
                     </div>
 
-                    <div onclick="verEstandar('ISO 9001', 'Cláusula 8.2 (Requisitos de Calidad)', 'ISO-9001', 100)" class="w-[85vw] sm:w-[45vw] lg:w-auto shrink-0 snap-center bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
+                    <div onclick="verEstandar('ISO 9001', 'Cláusula 8.2 (Requisitos de Calidad)', 'ISO-9001', 100)" class="w-[85vw] sm:w-[45vw] lg:w-auto shrink-0 snap-center bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-purple-400 hover:shadow-purple-500/5">
                         <div>
                             <div class="flex justify-between items-center">
-                                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 group-hover:bg-slate-800/50 group-hover:border-teal-500/40 transition"><span class="text-xl block leading-none">🎯</span></div>
+                                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 group-hover:bg-slate-800/50 group-hover:border-purple-500/40 transition">
+                                    <svg class="w-6 h-6 text-slate-300 group-hover:text-purple-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
                                 <span class="text-[9px] font-bold tracking-wider text-purple-400 bg-purple-950/20 px-2.5 py-1 rounded-md border border-purple-900/30 font-mono uppercase">Gestión Calidad</span>
                             </div>
-                            <h3 class="text-base font-bold mt-4 text-slate-200 group-hover:text-teal-400 transition-colors">ISO 9001</h3>
+                            <h3 class="text-base font-bold mt-4 text-slate-200 group-hover:text-purple-400 transition-colors">ISO 9001</h3>
                             <p class="text-xs text-slate-400 mt-2 line-clamp-2">Trazabilidad de requisitos de calidad, control operativo y entregables de software certificados.</p>
                         </div>
-                        <span class="text-xs text-teal-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control →</span>
+                        <span class="text-xs text-purple-400 font-semibold flex items-center group-hover:translate-x-1 transition-transform">Inspeccionar Control &rarr;</span>
                     </div>
                 </div>
             </div>
 
+            <!-- PANEL DE DETALLE -->
             <div id="vistaDetalle" class="hidden space-y-8 pb-10">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 p-5 rounded-2xl border border-slate-800">
                     <div>
@@ -143,13 +159,18 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- DROPZONE Y SIMULADOR -->
                     <div class="lg:col-span-7 bg-slate-900 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between shadow-xl">
                         <div>
-                            <h3 class="text-sm font-bold text-teal-400 uppercase tracking-wider mb-2">⚡ Auditoría Estructural Cruzada</h3>
+                            <h3 class="text-sm font-bold text-teal-400 uppercase tracking-wider mb-2 flex items-center">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                Auditoría Estructural Cruzada
+                            </h3>
                             <p class="text-xs text-slate-400 mb-6">Cargá las bitácoras o políticas de la compañía para contrastar contra el estándar regulatorio.</p>
                             
+                            <!-- DROPZONE VIVO SVG -->
                             <div id="dropzoneDetalle" class="border-2 border-dashed border-slate-700 hover:border-teal-500/50 rounded-xl p-8 text-center cursor-pointer transition-all duration-300 bg-slate-950/40 relative group">
-                                <span class="text-2xl block mb-2 transform group-hover:scale-110 transition-transform duration-300 text-slate-500 group-hover:text-teal-400">📁</span>
+                                <svg class="w-10 h-10 mx-auto mb-2 text-slate-500 group-hover:text-teal-400 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
                                 <span id="fileLabelDetalle" class="text-xs text-slate-300 block font-medium">Hacé clic o arrastrá un archivo para indexar</span>
                                 <input type="file" id="auditFileDetalle" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="actualizarFileDetalle(this)">
                             </div>
@@ -161,11 +182,15 @@
                         </div>
                     </div>
 
+                    <!-- COPILOTO IA -->
                     <div class="lg:col-span-5 bg-slate-900 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between shadow-xl relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-gradient-to-l from-teal-500/10 to-transparent w-full h-full pointer-events-none"></div>
                         <div>
                             <div class="flex justify-between items-center mb-3">
-                                <h3 class="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400 uppercase tracking-wider flex items-center"><span class="mr-1.5">🧠</span> Copiloto IA</h3>
+                                <h3 class="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400 uppercase tracking-wider flex items-center">
+                                    <svg class="w-4 h-4 mr-1.5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                    Copiloto IA
+                                </h3>
                                 <span class="text-[9px] font-bold text-teal-400 bg-teal-950/50 px-2 py-0.5 rounded border border-teal-900/40 font-mono uppercase">Premium</span>
                             </div>
                             <p class="text-xs text-slate-400 mb-4">La Inteligencia Artificial simula el comportamiento de un auditor externo.</p>
@@ -189,12 +214,13 @@
                 <div id="bloqueResultadoIA" class="hidden bg-slate-900 rounded-2xl border border-teal-500/20 p-6 shadow-2xl relative overflow-hidden">
                     <h4 class="text-xs font-black tracking-widest text-teal-400 uppercase mb-4 flex items-center"><span class="animate-pulse mr-2 h-2 w-2 rounded-full bg-teal-400 inline-block"></span> Diagnóstico Computado por Copiloto IA</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-slate-400 font-bold block mb-1">🔍 Diagnóstico Profundo</span><p id="iaDiagnostico" class="text-slate-300">Procesando...</p></div>
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-amber-400 font-bold block mb-1">🛠️ Remediación Técnica</span><p id="iaGaps" class="text-slate-300 whitespace-pre-line">Procesando...</p></div>
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-cyan-400 font-bold block mb-1">🎯 Blindaje ante Auditor</span><p id="iaTip" class="text-slate-300 italic">Procesando...</p></div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-slate-400 font-bold flex items-center mb-2"><svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg> Diagnóstico Profundo</span><p id="iaDiagnostico" class="text-slate-300">Procesando...</p></div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-amber-400 font-bold flex items-center mb-2"><svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Remediación Técnica</span><p id="iaGaps" class="text-slate-300 whitespace-pre-line">Procesando...</p></div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/60"><span class="text-cyan-400 font-bold flex items-center mb-2"><svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" /></svg> Blindaje ante Auditor</span><p id="iaTip" class="text-slate-300 italic">Procesando...</p></div>
                     </div>
                 </div>
 
+                <!-- HISTÓRICO DE EVIDENCIAS Y GRÁFICO -->
                 <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                     <div class="lg:col-span-2">
                         <div class="flex justify-between items-start border-b border-slate-800 pb-4 mb-4">
@@ -227,19 +253,35 @@
         </div>
     </div>
 
+    <footer class="bg-slate-900 border-t border-slate-800 mt-20 py-6 px-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p>© 2026 ComplianceFlow. Todos los derechos reservados. Evidencias criptográficas inalterables firmadas en la red corporativa.</p>
+            <p class="flex items-center space-x-1.5 bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800/60 shadow-md">
+                <svg class="w-4 h-4 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                <span class="text-slate-400">Mesa de ayuda:</span>
+                <a href="mailto:info.alerttrail@gmail.com" class="text-teal-400 hover:underline font-mono font-bold transition-all">info.alerttrail@gmail.com</a>
+            </p>
+        </div>
+    </footer>
+
     <script>
         let estandarActivoId = "";
         let tienePagoActivo = false;
         let graficoDona = null;
 
-        // TOAST NOTIFICATIONS MÁS LIMPIOS
+        // TOAST NOTIFICATIONS CON SVGs
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             const color = type === 'success' ? 'emerald' : (type === 'error' ? 'rose' : 'amber');
-            const icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : '⚠️');
+            
+            let iconSvg = '';
+            if(type === 'success') iconSvg = `<svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>`;
+            else if(type === 'error') iconSvg = `<svg class="w-5 h-5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            else iconSvg = `<svg class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            
             toast.className = `bg-slate-800 border border-${color}-500/50 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform transition-all duration-300 translate-x-[120%] pointer-events-auto`;
-            toast.innerHTML = `<span class="text-lg">${icon}</span><p class="text-xs font-medium">${message}</p>`;
+            toast.innerHTML = `${iconSvg}<p class="text-xs font-medium">${message}</p>`;
             container.appendChild(toast);
             
             setTimeout(() => toast.classList.remove('translate-x-[120%]'), 10);
@@ -256,7 +298,6 @@
             "ISO-9001": { titulo: "ISO 9001", sub: "Cláusula 8.2 — Trazabilidad de Requisitos de Calidad", cardTitulo: "Evidencia de Control y Aseguramiento de Calidad (QA)", descripcion: "Validación automatizada de firmas hash en artefactos y entregables de software dentro del pipeline de integración continua. Certifica la aprobación cruzada digital inalterable de QA.", estado: "🟢 100% CUMPLIDO", estadoClass: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold", fecha: "2026-06-01 01:10 UTC", hash: "4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c", origen: "CI/CD Pipeline QA Sign" }
         };
 
-        // RENDERIZAR GRÁFICO DONA
         function actualizarGrafico(score) {
             const ctx = document.getElementById('scoreChart').getContext('2d');
             if (graficoDona) graficoDona.destroy();
@@ -312,11 +353,7 @@
             document.getElementById('bloqueResultadoIA').classList.add('hidden');
             document.getElementById('vistaSuite').classList.add('hidden');
             document.getElementById('vistaDetalle').classList.remove('hidden');
-            
-            // Refrescar el gráfico
             actualizarGrafico(scoreObj);
-            
-            // Scrollear hacia arriba suavemente
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -325,15 +362,11 @@
             document.getElementById('vistaSuite').classList.remove('hidden');
         }
 
-        // LÓGICA DE DROPZONE DETALLE
         const dropzoneDetalle = document.getElementById('dropzoneDetalle');
         const fileInputDetalle = document.getElementById('auditFileDetalle');
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropzoneDetalle.addEventListener(eventName, preventDefaults, false);
-        });
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => dropzoneDetalle.addEventListener(eventName, preventDefaults, false));
         function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-
         ['dragenter', 'dragover'].forEach(eventName => dropzoneDetalle.addEventListener(eventName, () => dropzoneDetalle.classList.add('border-teal-400', 'bg-teal-900/20'), false));
         ['dragleave', 'drop'].forEach(eventName => dropzoneDetalle.addEventListener(eventName, () => dropzoneDetalle.classList.remove('border-teal-400', 'bg-teal-900/20'), false));
         dropzoneDetalle.addEventListener('drop', (e) => { fileInputDetalle.files = e.dataTransfer.files; actualizarFileDetalle(fileInputDetalle); });
@@ -350,7 +383,6 @@
             const btn = document.getElementById('btnAuditarPanel');
             const txtBtn = document.getElementById('txtBtnAuditarPanel');
             const originalText = txtBtn.innerText;
-            
             btn.disabled = true;
             txtBtn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Procesando y Cifrando...`;
 
@@ -366,16 +398,13 @@
 
             try {
                 const response = await fetch('/api/compliance/scan', { method: 'POST', body: formData });
-                
                 if (response.status === 402) {
                     document.getElementById('modalCuota').classList.remove('hidden');
                     showToast("Límite de cuota superado", "warning");
                     return;
                 }
-
                 if (response.ok) {
                     showToast("Auditoría del archivo completada y validada", "success");
-                    // Efecto visual subiendo el score tras auditar
                     actualizarGrafico(100);
                 } else {
                     const errData = await response.json();
@@ -402,7 +431,6 @@
             const txtBtn = document.getElementById('txtBtnCopiloto');
             const infraSeleccionada = document.getElementById('selectInfra').value;
             const originalText = txtBtn.innerText;
-            
             btn.disabled = true;
             txtBtn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-slate-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Consultando Modelos IA...`;
 
@@ -412,13 +440,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ norma_id: estandarActivoId, infraestructura_tipo: infraSeleccionada, premium_active: tienePagoActivo })
                 });
-                
                 if (response.status === 402) {
                     showToast("El Copiloto IA requiere Licencia Enterprise activa.", "warning");
                     return;
                 }
                 if (!response.ok) throw new Error("Error en el copiloto.");
-                
                 const data = await response.json();
                 document.getElementById('iaDiagnostico').innerText = data.diagnostico_profundo;
                 document.getElementById('iaGaps').innerText = data.plan_de_accion_gaps;
