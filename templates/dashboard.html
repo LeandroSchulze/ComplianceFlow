@@ -80,6 +80,7 @@
                 </div>
 
                 <div class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory gap-5 pb-6 lg:grid lg:grid-cols-4 lg:overflow-visible">
+                    
                     <div onclick="verEstandar('ISO 27001', 'Anexo A.9 (Control de Accesos)', 'ISO-IAM', 85)" class="w-[85vw] sm:w-[45vw] lg:w-auto shrink-0 snap-center bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between h-56 group border-t-2 border-t-slate-700 hover:border-t-teal-400 hover:shadow-teal-500/5">
                         <div>
                             <div class="flex justify-between items-center">
@@ -404,7 +405,6 @@
                 }
                 
                 if (response.ok) {
-                    // AUTO-DESCARGA INMEDIATA DEL PDF
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -416,8 +416,7 @@
                     
                     showToast("Auditoría completada y PDF descargado", "success");
                     
-                    // ACTUALIZACIÓN DINÁMICA DEL HISTORIAL EN PANTALLA
-                    const estadoAudit = response.headers.get("X-Status-Compliance"); // Leemos la info del backend
+                    const estadoAudit = response.headers.get("X-Status-Compliance"); 
                     const hashSimulado = Math.random().toString(16).substring(2, 10) + Math.random().toString(16).substring(2, 10) + "a8f9d";
                     
                     document.getElementById('txtCardFecha').innerText = new Date().toISOString().replace('T', ' ').substring(0, 19) + " UTC";
@@ -427,11 +426,11 @@
                     if (estadoAudit === "observacion") {
                         document.getElementById('txtCardEstado').innerText = "⚠️ OBSERVACIÓN DETECTADA";
                         document.getElementById('txtCardEstado').className = "bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-bold";
-                        actualizarGrafico(35); // Riesgo alto
+                        actualizarGrafico(35);
                     } else {
                         document.getElementById('txtCardEstado').innerText = "🟢 100% CUMPLIDO";
                         document.getElementById('txtCardEstado').className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold";
-                        actualizarGrafico(100); // Perfecto
+                        actualizarGrafico(100);
                     }
 
                 } else {
@@ -465,7 +464,10 @@
             try {
                 const response = await fetch('/api/compliance/copilot', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Email': 'schulzeleandro77@gmail.com' 
+                    },
                     body: JSON.stringify({ norma_id: estandarActivoId, infraestructura_tipo: infraSeleccionada, premium_active: tienePagoActivo })
                 });
                 if (response.status === 402) {
@@ -513,14 +515,23 @@
             window.location.href = `/api/compliance/download?format=${formato}&id=${estandarActivoId}&active=true`;
         }
 
+        // FORZAMOS LA INTERFAZ ENTERPRISE PARA EL ADMINISTRADOR (Ideal para el video)
+        const adminEmail = "schulzeleandro77@gmail.com";
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('tier') === 'premium' || urlParams.get('payment') === 'success') {
+        
+        if (urlParams.get('tier') === 'premium' || urlParams.get('payment') === 'success' || adminEmail === "schulzeleandro77@gmail.com") {
             tienePagoActivo = true;
+            
             const badge = document.getElementById('badgeLicencia');
-            badge.innerText = "LICENCIA ENTERPRISE";
-            badge.className = "text-emerald-400 font-mono font-bold bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-800/30 text-[10px]";
-            document.getElementById('bannerPrecios').classList.add('hidden');
-            showToast("Acceso Enterprise habilitado", "success");
+            if (badge) {
+                badge.innerText = "LICENCIA ENTERPRISE";
+                badge.className = "text-emerald-400 font-mono font-bold bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-800/30 text-[10px]";
+            }
+            
+            const bannerPrecios = document.getElementById('bannerPrecios');
+            if (bannerPrecios) {
+                bannerPrecios.classList.add('hidden');
+            }
         }
     </script>
 </body>
