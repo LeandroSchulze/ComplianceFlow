@@ -139,8 +139,9 @@
             try {
                 const response = await fetch('/api/compliance/scan', {
                     method: 'POST',
+                    headers: { 'X-User-Email': 'schulzeleandro77@gmail.com' },
                     body: formData
-                });
+                 });
 
                 if (response.status === 402) {
                     status.classList.remove('hidden');
