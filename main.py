@@ -14,7 +14,9 @@ from docx import Document
 from docx.shared import Pt, Inches, RGBColor
 
 import mercadopago
-import google.generativeai as genai
+
+# ⚙️ ACTUALIZACIÓN: LIBRERÍA NUEVA DE GOOGLE
+from google import genai
 
 from scanner import ComplianceScanner
 from reporter import ReportGenerator
@@ -115,7 +117,7 @@ def verificar_y_actualizar_limite_ip(ip: str, email: str = None) -> int:
                 return nuevos
             return actuales
 
-# --- MOTOR DE INTELIGENCIA ARTIFICIAL COPILOT (ACTUALIZADO CON GEMINI Y FALLBACK) ---
+# --- MOTOR DE INTELIGENCIA ARTIFICIAL COPILOT (ACTUALIZADO A LA NUEVA API) ---
 class ComplianceAI_CoPilot:
     @staticmethod
     def analizar_normativa(norma_id: str, infra: str) -> dict:
@@ -124,8 +126,8 @@ class ComplianceAI_CoPilot:
         
         if api_key:
             try:
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                # Inicializamos el cliente con el nuevo SDK
+                client = genai.Client(api_key=api_key)
                 
                 prompt = f"""
                 Actúa como un Auditor Senior de Ciberseguridad B2B. 
@@ -138,7 +140,11 @@ class ComplianceAI_CoPilot:
                 "tip": Una pregunta muy técnica que un auditor riguroso haría sobre este entorno.
                 """
                 
-                response = model.generate_content(prompt)
+                # Hacemos la consulta usando la sintaxis actualizada
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=prompt
+                )
                 
                 texto_limpio = response.text.strip()
                 if texto_limpio.startswith("```json"):
@@ -158,7 +164,9 @@ class ComplianceAI_CoPilot:
                 }
             except Exception as e:
                 registrar_evento(f"Fallo en API Gemini: {str(e)}")
+                # Si ocurre un error, continúa al sistema de respaldo
 
+        # SISTEMA DE RESPALDO (Fallback)
         respuestas_ia = {
             "ISO-IAM": {
                 "diag": f"Análisis de {infra}: Se detectaron 3 perfiles de IAM con privilegios 'AdministratorAccess' sin restricciones de IP. La política 'AllowAll' está activa en el entorno de producción.",
@@ -184,7 +192,7 @@ class ComplianceAI_CoPilot:
         
         data_fallback = respuestas_ia.get(norma_id, respuestas_ia["ISO-IAM"])
         return {
-            "estado_ia": "✨ ANÁLISIS GENERADO POR COPILOT IA",
+            "estado_ia": "✨ ANÁLISIS GENERADO POR COPILOT IA (CACHÉ)",
             "fecha_computo": fecha_analisis, 
             "entorno_evaluado": infra,
             "diagnostico_profundo": data_fallback["diag"],
