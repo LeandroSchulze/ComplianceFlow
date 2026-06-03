@@ -178,7 +178,7 @@ def crear_preferencia_premium():
         raise HTTPException(status_code=500, detail=str(e))
 
 # =====================================================================
-# ⚙️ NUEVO: MOTOR DE ANÁLISIS ESTÁTICO DE ARCHIVOS REAles
+# ⚙️ MOTOR DE ANÁLISIS ESTÁTICO DE ARCHIVOS REALES
 # =====================================================================
 def analizar_contenido_documento(contenido: str, norma_id: str) -> dict:
     info = DATA_ESTANDARES.get(norma_id, DATA_ESTANDARES["ISO-IAM"]).copy()
@@ -213,13 +213,12 @@ def analizar_contenido_documento(contenido: str, norma_id: str) -> dict:
         
     return info
 
-# --- ENDPOINT CORE ACTUALIZADO (RECIBE ARCHIVOS Y VALIDA ADMIN) ---
+# --- ENDPOINT CORE ACTUALIZADO ---
 @app.post("/api/compliance/scan", tags=["Escáner"])
 async def ejecutar_escaneo_web(request: Request, norma_id: str = Form(...), file: UploadFile = File(...)):
     ip_cliente = obtener_ip_cliente(request)
     user_email = request.headers.get("X-User-Email")
     
-    # MODIFICACIÓN: Si no es el administrador, controlamos en la base de datos
     if user_email != "schulzeleandro77@gmail.com":
         try:
             with obtener_conexion_db() as conn:
@@ -235,15 +234,17 @@ async def ejecutar_escaneo_web(request: Request, norma_id: str = Form(...), file
         
     verificar_y_actualizar_limite_ip(ip_cliente, email=user_email)
     
-    # Lectura defensiva del archivo subido
     try:
         contenido_bytes = await file.read()
         contenido_texto = contenido_bytes.decode('utf-8', errors='ignore')
     except Exception:
         contenido_texto = ""
     
-    # Enviamos el texto real a nuestro motor de análisis
     info_dinamica = analizar_contenido_documento(contenido_texto, norma_id)
+    
+    # ⚙️ GUARDAR EN HISTORIAL EN VIVO
+    global DATA_ESTANDARES
+    DATA_ESTANDARES[norma_id] = info_dinamica
     
     datos_reporte = {
         "id": norma_id,
@@ -258,16 +259,59 @@ async def ejecutar_escaneo_web(request: Request, norma_id: str = Form(...), file
     reporter = ReportGenerator(cliente_nombre=f"Evidencia: {nombre_seguro}")
     archivo_pdf = reporter.generar_pdf_cumplimiento(datos_reporte)
     
-    return FileResponse(path=archivo_pdf, media_type="application/pdf", filename=archivo_pdf)
+    headers = {
+        "X-Status-Compliance": "observacion" if "OBSERVACIÓN" in info_dinamica["estado"] else "aprobado",
+        "Access-Control-Expose-Headers": "X-Status-Compliance"
+    }
+    
+    return FileResponse(path=archivo_pdf, media_type="application/pdf", filename=archivo_pdf, headers=headers)
 
 @app.get("/api/compliance/download", tags=["Escáner"])
 def descargar_evidencia_unificada(format: str, id: str, active: bool = False):
     if not active: raise HTTPException(status_code=402, detail="Descarga bloqueada.")
+    
+    info = DATA_ESTANDARES.get(id, DATA_ESTANDARES["ISO-IAM"])
+    datos = {"id": id, "norma": info["norma"], "titulo": info["titulo"], "evidencia_id": info["evidencia_id"], "estado": info["estado"], "detalle": info["detalle"]}
+    
     if format == "pdf":
-        info = DATA_ESTANDARES.get(id, DATA_ESTANDARES["ISO-IAM"])
-        reporter = ReportGenerator(cliente_nombre="Matriz Histórica")
-        pdf = reporter.generar_pdf_cumplimiento({"id": id, "norma": info["norma"], "titulo": info["titulo"], "evidencia_id": info["evidencia_id"], "estado": info["estado"], "detalle": info["detalle"]})
+        reporter = ReportGenerator(cliente_nombre="Auditoría Histórica")
+        pdf = reporter.generar_pdf_cumplimiento(datos)
         return FileResponse(path=pdf, media_type="application/pdf", filename=f"evidencia_{id}.pdf")
+        
+    elif format == "word":
+        doc = Document()
+        titulo = doc.add_heading('COMPLIANCEFLOW - CERTIFICADO OFICIAL DE AUDITORÍA', 0)
+        titulo.alignment = 1 
+        doc.add_paragraph("==========================================================================")
+        
+        doc.add_heading('1. Metadatos de la Evaluación', level=1)
+        tabla = doc.add_table(rows=3, cols=2)
+        tabla.style = 'Table Grid'
+        tabla.rows[0].cells[0].text = 'Normativa Auditada:'
+        tabla.rows[0].cells[1].text = info["norma"]
+        tabla.rows[1].cells[0].text = 'ID de Control Técnico:'
+        tabla.rows[1].cells[1].text = info["evidencia_id"]
+        tabla.rows[2].cells[0].text = 'Fecha de Aprobación:'
+        tabla.rows[2].cells[1].text = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
+        doc.add_paragraph("\n")
+        
+        doc.add_heading('2. Veredicto del Escáner', level=1)
+        p = doc.add_paragraph()
+        run = p.add_run(info["estado"])
+        run.bold = True
+        run.font.size = Pt(14)
+        
+        doc.add_heading('3. Detalle Técnico (Logs Analizados)', level=1)
+        doc.add_paragraph(info["detalle"])
+        doc.add_paragraph("\n==========================================================================")
+        
+        footer = doc.add_paragraph()
+        footer.add_run('Firma Digital: ').bold = True
+        footer.add_run('Generado automáticamente por el motor IA de ComplianceFlow. Documento inalterable.')
+        
+        filename = f"auditoria_{id}_oficial.docx"
+        doc.save(filename)
+        return FileResponse(path=filename, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename=filename)
 
 # --- VISTAS HTML ---
 @app.get("/", response_class=HTMLResponse)
