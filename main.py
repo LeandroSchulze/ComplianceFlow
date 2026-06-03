@@ -92,7 +92,11 @@ def obtener_ip_cliente(request: Request) -> str:
         return x_forwarded_for.split(",")[0].strip()
     return request.client.host if request.client else "127.0.0.1"
 
-def verificar_y_actualizar_limite_ip(ip: str) -> int:
+# MODIFICACIÓN: Se agrega el parámetro email para validar la cuenta admin
+def verificar_y_actualizar_limite_ip(ip: str, email: str = None) -> int:
+    if email == "schulzeleandro77@gmail.com":
+        return 0
+        
     with obtener_conexion_db() as conn:
         with conn.cursor() as cursor:
             cursor.execute("SELECT escaneos_realizados FROM control_ips WHERE ip = %s", (ip,))
@@ -209,24 +213,27 @@ def analizar_contenido_documento(contenido: str, norma_id: str) -> dict:
         
     return info
 
-# --- ENDPOINT CORE ACTUALIZADO (RECIBE ARCHIVOS) ---
+# --- ENDPOINT CORE ACTUALIZADO (RECIBE ARCHIVOS Y VALIDA ADMIN) ---
 @app.post("/api/compliance/scan", tags=["Escáner"])
 async def ejecutar_escaneo_web(request: Request, norma_id: str = Form(...), file: UploadFile = File(...)):
     ip_cliente = obtener_ip_cliente(request)
+    user_email = request.headers.get("X-User-Email")
     
-    try:
-        with obtener_conexion_db() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT escaneos_realizados FROM control_ips WHERE ip = %s", (ip_cliente,))
-                resultado = cursor.fetchone()
-                if resultado and resultado[0] >= 3:
-                    raise HTTPException(status_code=402, detail="Límite freemium de 3 pruebas alcanzado.")
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        registrar_evento(f"Fallo de persistencia BD: {str(e)}")
+    # MODIFICACIÓN: Si no es el administrador, controlamos en la base de datos
+    if user_email != "schulzeleandro77@gmail.com":
+        try:
+            with obtener_conexion_db() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT escaneos_realizados FROM control_ips WHERE ip = %s", (ip_cliente,))
+                    resultado = cursor.fetchone()
+                    if resultado and resultado[0] >= 3:
+                        raise HTTPException(status_code=402, detail="Límite freemium de 3 pruebas alcanzado.")
+        except HTTPException as he:
+            raise he
+        except Exception as e:
+            registrar_evento(f"Fallo de persistencia BD: {str(e)}")
         
-    verificar_y_actualizar_limite_ip(ip_cliente)
+    verificar_y_actualizar_limite_ip(ip_cliente, email=user_email)
     
     # Lectura defensiva del archivo subido
     try:
@@ -272,17 +279,6 @@ def dashboard(): return FileResponse("templates/dashboard.html")
 @app.get("/login", response_class=HTMLResponse)
 def mostrar_login(): return FileResponse("templates/login.html")
 
-# --- VISTAS HTML ---
-@app.get("/", response_class=HTMLResponse)
-def index(): return FileResponse("templates/index.html")
-
-@app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(): return FileResponse("templates/dashboard.html")
-
-@app.get("/login", response_class=HTMLResponse)
-def mostrar_login(): return FileResponse("templates/login.html")
-
-# 👇 ESTO ES LO QUE FALTA AGREGAR 👇
 # --- AUTENTICACIÓN ---
 @app.post("/api/auth/register", status_code=status.HTTP_201_CREATED, tags=["Autenticación"])
 def registrar(usuario: UserRegister):
@@ -298,6 +294,5 @@ def login(usuario: UserLogin):
     if not auth_handler.verificar_mfa(usuario.email, codigo_limpio):
         raise HTTPException(status_code=401, detail="MFA inválido.")
     return {"mensaje": "Acceso concedido"}
-# 👆 HASTA ACÁ 👆
 
 app.include_router(router)
