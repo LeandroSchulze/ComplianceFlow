@@ -372,22 +372,23 @@ def descargar_evidencia_unificada(format: str, id: str, active: bool = False):
         
     elif format == "word":
         doc = Document()
-        titulo = doc.add_heading('COMPLIANCEFLOW - CERTIFICADO OFICIAL DE AUDITORÍA', 0)
+        # ⚙️ CAMBIO: Lenguaje orientado a diagnóstico preliminar
+        titulo = doc.add_heading('COMPLIANCEFLOW - REPORTE DE DIAGNÓSTICO PRELIMINAR', 0)
         titulo.alignment = 1 
         doc.add_paragraph("==========================================================================")
         
-        doc.add_heading('1. Metadatos de la Evaluación', level=1)
+        doc.add_heading('1. Metadatos del Diagnóstico', level=1)
         tabla = doc.add_table(rows=3, cols=2)
         tabla.style = 'Table Grid'
         tabla.rows[0].cells[0].text = 'Normativa Auditada:'
         tabla.rows[0].cells[1].text = info["norma"]
         tabla.rows[1].cells[0].text = 'ID de Control Técnico:'
         tabla.rows[1].cells[1].text = info["evidencia_id"]
-        tabla.rows[2].cells[0].text = 'Fecha de Aprobación:'
+        tabla.rows[2].cells[0].text = 'Fecha de Evaluación:'
         tabla.rows[2].cells[1].text = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         doc.add_paragraph("\n")
         
-        doc.add_heading('2. Veredicto del Escáner', level=1)
+        doc.add_heading('2. Estado Preliminar', level=1)
         p = doc.add_paragraph()
         run = p.add_run(info["estado"])
         run.bold = True
@@ -398,15 +399,17 @@ def descargar_evidencia_unificada(format: str, id: str, active: bool = False):
         doc.add_paragraph("\n==========================================================================")
         
         footer = doc.add_paragraph()
-        footer.add_run('Firma Digital: ').bold = True
-        footer.add_run('Generado automáticamente por el motor IA de ComplianceFlow. Documento inalterable.')
+        # ⚙️ CAMBIO: Aviso legal explícito de que no es una certificación oficial
+        footer.add_run('Aviso Legal: ').bold = True
+        footer.add_run('Este documento es una guía técnica predictiva generada por IA. No constituye una certificación oficial ni reemplaza el veredicto de un auditor externo.')
         
-        # ⚙️ SOLUCIÓN AL PUNTO 1: Guardado en memoria RAM (io.BytesIO) para evitar errores de escritura en Railway
+        # ⚙️ Guardado en memoria RAM (io.BytesIO) para evitar errores de escritura en Railway
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
         
-        filename = f"auditoria_{id}_oficial.docx"
+        # ⚙️ CAMBIO: Nombre de archivo ajustado a "diagnostico preliminar"
+        filename = f"diagnostico_{id}_preliminar.docx"
         headers = {'Content-Disposition': f'attachment; filename="{filename}"'}
         return StreamingResponse(buffer, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers=headers)
 
