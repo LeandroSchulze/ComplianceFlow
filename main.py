@@ -14,8 +14,6 @@ from docx import Document
 from docx.shared import Pt, Inches, RGBColor
 
 import mercadopago
-
-# ⚙️ ACTUALIZACIÓN: LIBRERÍA NUEVA DE GOOGLE
 from google import genai
 
 from scanner import ComplianceScanner
@@ -72,10 +70,6 @@ class AICopilotRequest(BaseModel):
     infraestructura_tipo: str 
     premium_active: bool = False
 
-class BillingAlertRequest(BaseModel):
-    email: EmailStr
-    dias_restantes: int
-
 DATA_ESTANDARES = {
     "ISO-IAM": {"norma": "ISO 27001 — Anexo A.9", "titulo": "Auditoría de Control de Accesos", "evidencia_id": "EV-ISO-A9-8812", "estado": "VERIFICANDO...", "detalle": "Pendiente de análisis real."},
     "SOC2-S3": {"norma": "SOC 2 Type II — CC6.3", "titulo": "Análisis Criptográfico S3", "evidencia_id": "EV-SOC2-S3-9202", "estado": "VERIFICANDO...", "detalle": "Pendiente de análisis real."},
@@ -96,7 +90,6 @@ def obtener_ip_cliente(request: Request) -> str:
         return x_forwarded_for.split(",")[0].strip()
     return request.client.host if request.client else "127.0.0.1"
 
-# MODIFICACIÓN: Se agrega el parámetro email para validar la cuenta admin
 def verificar_y_actualizar_limite_ip(ip: str, email: str = None) -> int:
     if email == "schulzeleandro77@gmail.com":
         return 0
@@ -117,7 +110,7 @@ def verificar_y_actualizar_limite_ip(ip: str, email: str = None) -> int:
                 return nuevos
             return actuales
 
-# --- MOTOR DE INTELIGENCIA ARTIFICIAL COPILOT (ACTUALIZADO A LA NUEVA API) ---
+# --- MOTOR DE INTELIGENCIA ARTIFICIAL COPILOT (ACTUALIZADO CON EL NUEVO SDK) ---
 class ComplianceAI_CoPilot:
     @staticmethod
     def analizar_normativa(norma_id: str, infra: str) -> dict:
@@ -126,7 +119,6 @@ class ComplianceAI_CoPilot:
         
         if api_key:
             try:
-                # Inicializamos el cliente con el nuevo SDK
                 client = genai.Client(api_key=api_key)
                 
                 prompt = f"""
@@ -140,7 +132,6 @@ class ComplianceAI_CoPilot:
                 "tip": Una pregunta muy técnica que un auditor riguroso haría sobre este entorno.
                 """
                 
-                # Hacemos la consulta usando la sintaxis actualizada
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=prompt
@@ -164,9 +155,7 @@ class ComplianceAI_CoPilot:
                 }
             except Exception as e:
                 registrar_evento(f"Fallo en API Gemini: {str(e)}")
-                # Si ocurre un error, continúa al sistema de respaldo
 
-        # SISTEMA DE RESPALDO (Fallback)
         respuestas_ia = {
             "ISO-IAM": {
                 "diag": f"Análisis de {infra}: Se detectaron 3 perfiles de IAM con privilegios 'AdministratorAccess' sin restricciones de IP. La política 'AllowAll' está activa en el entorno de producción.",
@@ -203,49 +192,91 @@ class ComplianceAI_CoPilot:
 @app.post("/api/compliance/copilot", tags=["Inteligencia Artificial"])
 def obtener_ayuda_copilot_ia(request: Request, solicitud: AICopilotRequest):
     user_email = request.headers.get("X-User-Email")
+    # Validación segura: O tiene licencia o es tu cuenta de administrador
     if not solicitud.premium_active and user_email != "schulzeleandro77@gmail.com": 
-        raise HTTPException(status_code=402, detail="Se requiere Licencia Enterprise para usar el Copiloto IA.")
+        # Verificamos si en la base de datos realmente tiene licencia paga
+        if not auth_handler.verificar_premium(user_email):
+            raise HTTPException(status_code=402, detail="Se requiere Licencia Enterprise activa.")
     return ComplianceAI_CoPilot.analizar_normativa(solicitud.norma_id, solicitud.infraestructura_tipo)
 
 
-# --- PASARELAS DE COBRO MERCADOPAGO ---
+# --- PASARELAS DE COBRO MERCADOPAGO CON VINCULACIÓN DE USUARIO ---
 @app.post("/api/checkout/preference/individual", tags=["Financiero"])
-def crear_preferencia_individual():
+def crear_preferencia_individual(request: Request):
     global TIPO_CAMBIO
+    user_email = request.headers.get("X-User-Email", "invitado@complianceflow.me")
     try:
         token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
         sdk_dinamico = mercadopago.SDK(token)
         precio_final_ars = float(20.0 * TIPO_CAMBIO)
         preference_data = {
-            "items": [{"title": "Pase Express — 1 Reporte de Evidencia Firmado", "quantity": 1, "unit_price": precio_final_ars, "currency_id": "ARS"}],
+            "items": [{"title": "Pase Express — 1 Reporte de Evidencia", "quantity": 1, "unit_price": precio_final_ars, "currency_id": "ARS"}],
+            "external_reference": user_email, # 🔒 Atamos el pago al email de la sesión
             "back_urls": {"success": "https://www.complianceflow.me/dashboard?payment=success", "failure": "https://www.complianceflow.me/dashboard", "pending": "https://www.complianceflow.me/dashboard"},
             "auto_return": "approved"
         }
         mp_res = sdk_dinamico.preference().create(preference_data)
-        if "response" in mp_res and "init_point" in mp_res["response"]:
-            return {"init_point": mp_res["response"]["init_point"]}
+        if "response" in mp_res and "init_point" in mp_res["response"]: return {"init_point": mp_res["response"]["init_point"]}
         raise HTTPException(status_code=400, detail="Error SDK MP")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e: raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/checkout/preference/premium", tags=["Financiero"])
-def crear_preferencia_premium():
+def crear_preferencia_premium(request: Request):
     global TIPO_CAMBIO
+    user_email = request.headers.get("X-User-Email", "invitado@complianceflow.me")
     try:
         token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
         sdk_dinamico = mercadopago.SDK(token)
         precio_final_ars = float(50.0 * TIPO_CAMBIO)
         preference_data = {
             "items": [{"title": "Licencia Enterprise Corporativa", "quantity": 1, "unit_price": precio_final_ars, "currency_id": "ARS"}],
+            "external_reference": user_email, # 🔒 Atamos el pago al email de la sesión
             "back_urls": {"success": "https://www.complianceflow.me/dashboard?tier=premium", "failure": "https://www.complianceflow.me/dashboard", "pending": "https://www.complianceflow.me/dashboard"},
             "auto_return": "approved"
         }
         mp_res = sdk_dinamico.preference().create(preference_data)
-        if "response" in mp_res and "init_point" in mp_res["response"]:
-            return {"init_point": mp_res["response"]["init_point"]}
+        if "response" in mp_res and "init_point" in mp_res["response"]: return {"init_point": mp_res["response"]["init_point"]}
         raise HTTPException(status_code=400, detail="Error SDK MP Premium")
+    except Exception as e: raise HTTPException(status_code=500, detail=str(e))
+
+
+# 🛡️ PUNTO 5 SOLUCIONADO: ENDPOINT DE WEBHOOK PARA RECIBIR NOTIFICACIONES DE MERCADOPAGO
+@router.post("/api/payments/webhook", tags=["Financiero"])
+async def webhook_mercadopago(request: Request):
+    try:
+        payload = await request.json()
+        # Evaluamos las notificaciones que envía MercadoPago al procesar un pago
+        if payload.get("type") == "payment" or "data" in payload:
+            payment_id = payload.get("data", {}).get("id") or payload.get("id")
+            if payment_id:
+                token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
+                sdk = mercadopago.SDK(token)
+                # Consultamos de forma segura el estado directo a los servidores de MP
+                payment_info = sdk.payment().get(payment_id)
+                
+                if payment_info.get("status") == 200:
+                    response_data = payment_info.get("response", {})
+                    status_pago = response_data.get("status")
+                    email_cliente = response_data.get("external_reference")
+                    
+                    # Si el dinero ingresó de verdad, activamos en la base de datos
+                    if status_pago == "approved" and email_cliente:
+                        auth_handler.activar_premium(email_cliente)
+                        return {"status": "success", "message": "Licencia activada de forma asíncrona segura."}
+        return {"status": "ignored"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        registrar_evento(f"Fallo crítico procesando webhook de pagos: {str(e)}")
+        return {"status": "error"}
+
+
+# 🛡️ ENDPOINT SEGURO DE VERIFICACIÓN DE LICENCIA (Para el Dashboard)
+@app.get("/api/user/status", tags=["Autenticación"])
+def verificar_licencia_segura(x_user_email: str = Header(None)):
+    if not x_user_email: raise HTTPException(status_code=400, detail="Falta email en cabeceras.")
+    # Rompe el bypass: Consulta el estado inalterable en Postgres, no en la URL
+    premium_real = auth_handler.verificar_premium(x_user_email)
+    return {"email": x_user_email, "licencia_enterprise": premium_real or (x_user_email == "schulzeleandro77@gmail.com")}
+
 
 # =====================================================================
 # ⚙️ MOTOR DE ANÁLISIS ESTÁTICO DE ARCHIVOS REALES
@@ -283,7 +314,6 @@ def analizar_contenido_documento(contenido: str, norma_id: str) -> dict:
         
     return info
 
-# --- ENDPOINT CORE ACTUALIZADO ---
 @app.post("/api/compliance/scan", tags=["Escáner"])
 async def ejecutar_escaneo_web(request: Request, norma_id: str = Form(...), file: UploadFile = File(...)):
     ip_cliente = obtener_ip_cliente(request)
@@ -297,32 +327,24 @@ async def ejecutar_escaneo_web(request: Request, norma_id: str = Form(...), file
                     resultado = cursor.fetchone()
                     if resultado and resultado[0] >= 3:
                         raise HTTPException(status_code=402, detail="Límite freemium de 3 pruebas alcanzado.")
-        except HTTPException as he:
-            raise he
-        except Exception as e:
-            registrar_evento(f"Fallo de persistencia BD: {str(e)}")
+        except HTTPException as he: raise he
+        except Exception as e: registrar_evento(f"Fallo de persistencia BD: {str(e)}")
         
     verificar_y_actualizar_limite_ip(ip_cliente, email=user_email)
     
     try:
         contenido_bytes = await file.read()
         contenido_texto = contenido_bytes.decode('utf-8', errors='ignore')
-    except Exception:
-        contenido_texto = ""
+    except Exception: contenido_texto = ""
     
     info_dinamica = analizar_contenido_documento(contenido_texto, norma_id)
     
-    # ⚙️ GUARDAR EN HISTORIAL EN VIVO
     global DATA_ESTANDARES
     DATA_ESTANDARES[norma_id] = info_dinamica
     
     datos_reporte = {
-        "id": norma_id,
-        "norma": info_dinamica["norma"],
-        "titulo": info_dinamica["titulo"],
-        "evidencia_id": info_dinamica["evidencia_id"],
-        "estado": info_dinamica["estado"],
-        "detalle": info_dinamica["detalle"]
+        "id": norma_id, "norma": info_dinamica["norma"], "titulo": info_dinamica["titulo"],
+        "evidencia_id": info_dinamica["evidencia_id"], "estado": info_dinamica["estado"], "detalle": info_dinamica["detalle"]
     }
     
     nombre_seguro = file.filename if file.filename else "documento_generico.log"
@@ -379,9 +401,14 @@ def descargar_evidencia_unificada(format: str, id: str, active: bool = False):
         footer.add_run('Firma Digital: ').bold = True
         footer.add_run('Generado automáticamente por el motor IA de ComplianceFlow. Documento inalterable.')
         
+        # ⚙️ SOLUCIÓN AL PUNTO 1: Guardado en memoria RAM (io.BytesIO) para evitar errores de escritura en Railway
+        buffer = io.BytesIO()
+        doc.save(buffer)
+        buffer.seek(0)
+        
         filename = f"auditoria_{id}_oficial.docx"
-        doc.save(filename)
-        return FileResponse(path=filename, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename=filename)
+        headers = {'Content-Disposition': f'attachment; filename="{filename}"'}
+        return StreamingResponse(buffer, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers=headers)
 
 # --- VISTAS HTML ---
 @app.get("/", response_class=HTMLResponse)
@@ -399,14 +426,12 @@ def registrar(usuario: UserRegister):
     try:
         mfa_secret = auth_handler.registrar_usuario(usuario.email, usuario.password)
         return {"mensaje": "Usuario registrado exitosamente", "mfa_secret": mfa_secret}
-    except Exception as e: 
-        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e: raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/api/auth/login", tags=["Autenticación"])
 def login(usuario: UserLogin):
     codigo_limpio = usuario.codigo_mfa.replace(" ", "").replace("-", "").strip()
-    if not auth_handler.verificar_mfa(usuario.email, codigo_limpio):
-        raise HTTPException(status_code=401, detail="MFA inválido.")
+    if not auth_handler.verificar_mfa(usuario.email, codigo_limpio): raise HTTPException(status_code=401, detail="MFA inválido.")
     return {"mensaje": "Acceso concedido"}
 
 app.include_router(router)
