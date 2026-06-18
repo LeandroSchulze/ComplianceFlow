@@ -127,8 +127,8 @@ class ReportGenerator:
         <b><font size=7.5 color="#14b8a6">AUTOMATED B2B COMPLIANCE SUITE</font></b>"""
         p_left = Paragraph(p_left_html, style_left_header)
         
-        p_right_html = """<b><font size=9 color="#10b981">SECURE RECORD</font></b><br/>
-        <i><font size=8 color="#64748b">PostgreSQL Verified</font></i>"""
+        p_right_html = """<b><font size=9 color="#10b981">PRE-AUDIT DIAGNOSTIC</font></b><br/>
+        <i><font size=8 color="#64748b">AI Powered Analysis</font></i>"""
         p_right = Paragraph(p_right_html, style_right_header)
         
         header_table = Table([[p_left, p_right]], colWidths=[ancho_util * 0.65, ancho_util * 0.35])
@@ -170,12 +170,12 @@ class ReportGenerator:
         story.append(Paragraph("1. Metadatos de Control de la Auditoría", style_h2))
         
         meta_data = [
-            [Paragraph("Título del Estudio:", style_meta_label), Paragraph(titulo, style_meta_val)],
-            [Paragraph("ID Único de Evidencia:", style_meta_label), Paragraph(f"<b>{evidencia_id}</b>", style_meta_val)],
-            [Paragraph("Estado del Control:", style_meta_label), Paragraph(f"<b>{estado}</b>", style_meta_val)],
+            [Paragraph("Tipo de Análisis:", style_meta_label), Paragraph(titulo, style_meta_val)],
+            [Paragraph("ID de Diagnóstico:", style_meta_label), Paragraph(f"<b>{evidencia_id}</b>", style_meta_val)],
+            [Paragraph("Estado Preliminar:", style_meta_label), Paragraph(f"<b>{estado}</b>", style_meta_val)],
             [Paragraph("Fecha de Evaluación:", style_meta_label), Paragraph(f"{fecha_actual} UTC", style_meta_val)],
-            [Paragraph("Cliente Evaluado:", style_meta_label), Paragraph(self.cliente_nombre, style_meta_val)],
-            [Paragraph("Sistema de Custodia:", style_meta_label), Paragraph("Evidence Locker Cifrado (AES-256)", style_meta_val)]
+            [Paragraph("Entorno Evaluado:", style_meta_label), Paragraph(self.cliente_nombre, style_meta_val)],
+            [Paragraph("Motor de Análisis:", style_meta_label), Paragraph("ComplianceFlow Copilot IA", style_meta_val)]
         ]
         
         meta_table = Table(meta_data, colWidths=[ancho_util * 0.3, ancho_util * 0.7])
@@ -204,8 +204,8 @@ class ReportGenerator:
         ]))
         story.append(divider_table)
         
-        story.append(Paragraph("--- DOCUMENTO CONFIDENCIAL INALTERABLE ---", style_footer_title))
-        story.append(Paragraph("Este documento constituye evidencia legal ejecutable ante auditores externos. Los hashes e integridad de los bloques están resguardados criptográficamente en la infraestructura del servidor PostgreSQL de Railway.", style_footer_body))
+        story.append(Paragraph("--- REPORTE DE DIAGNÓSTICO INTERNO ---", style_footer_title))
+        story.append(Paragraph("Este documento es una guía técnica predictiva generada mediante análisis automatizado. Su propósito es orientar a los equipos de tecnología en la remediación de brechas antes de una auditoría oficial. No constituye una certificación legal vinculante ni reemplaza el veredicto de un auditor externo acreditado.", style_footer_body))
         
         # Compilar reporte físico
         doc.build(story)
