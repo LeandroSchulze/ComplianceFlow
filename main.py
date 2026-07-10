@@ -70,6 +70,11 @@ class AICopilotRequest(BaseModel):
     infraestructura_tipo: str 
     premium_active: bool = False
 
+# ⚙️ NUEVO MODELO PARA EL ESCÁNER AUTOMATIZADO
+class DBScanRequest(BaseModel):
+    db_url: str
+    norma_id: str = "SOC2-DB-AUTO"
+
 DATA_ESTANDARES = {
     "ISO-IAM": {"norma": "ISO 27001 — Anexo A.9", "titulo": "Auditoría de Control de Accesos", "evidencia_id": "EV-ISO-A9-8812", "estado": "VERIFICANDO...", "detalle": "Pendiente de análisis real."},
     "SOC2-S3": {"norma": "SOC 2 Type II — CC6.3", "titulo": "Análisis Criptográfico S3", "evidencia_id": "EV-SOC2-S3-9202", "estado": "VERIFICANDO...", "detalle": "Pendiente de análisis real."},
@@ -110,7 +115,7 @@ def verificar_y_actualizar_limite_ip(ip: str, email: str = None) -> int:
                 return nuevos
             return actuales
 
-# --- MOTOR DE INTELIGENCIA ARTIFICIAL COPILOT (ACTUALIZADO CON EL NUEVO SDK) ---
+# --- MOTOR DE INTELIGENCIA ARTIFICIAL COPILOT ---
 class ComplianceAI_CoPilot:
     @staticmethod
     def analizar_normativa(norma_id: str, infra: str) -> dict:
@@ -192,15 +197,13 @@ class ComplianceAI_CoPilot:
 @app.post("/api/compliance/copilot", tags=["Inteligencia Artificial"])
 def obtener_ayuda_copilot_ia(request: Request, solicitud: AICopilotRequest):
     user_email = request.headers.get("X-User-Email")
-    # Validación segura: O tiene licencia o es tu cuenta de administrador
     if not solicitud.premium_active and user_email != "schulzeleandro77@gmail.com": 
-        # Verificamos si en la base de datos realmente tiene licencia paga
         if not auth_handler.verificar_premium(user_email):
             raise HTTPException(status_code=402, detail="Se requiere Licencia Enterprise activa.")
     return ComplianceAI_CoPilot.analizar_normativa(solicitud.norma_id, solicitud.infraestructura_tipo)
 
 
-# --- PASARELAS DE COBRO MERCADOPAGO CON VINCULACIÓN DE USUARIO ---
+# --- PASARELAS DE COBRO MERCADOPAGO ---
 @app.post("/api/checkout/preference/individual", tags=["Financiero"])
 def crear_preferencia_individual(request: Request):
     global TIPO_CAMBIO
@@ -211,7 +214,7 @@ def crear_preferencia_individual(request: Request):
         precio_final_ars = float(20.0 * TIPO_CAMBIO)
         preference_data = {
             "items": [{"title": "Pase Express — 1 Reporte de Evidencia", "quantity": 1, "unit_price": precio_final_ars, "currency_id": "ARS"}],
-            "external_reference": user_email, # 🔒 Atamos el pago al email de la sesión
+            "external_reference": user_email,
             "back_urls": {"success": "https://www.complianceflow.me/dashboard?payment=success", "failure": "https://www.complianceflow.me/dashboard", "pending": "https://www.complianceflow.me/dashboard"},
             "auto_return": "approved"
         }
@@ -230,7 +233,7 @@ def crear_preferencia_premium(request: Request):
         precio_final_ars = float(50.0 * TIPO_CAMBIO)
         preference_data = {
             "items": [{"title": "Licencia Enterprise Corporativa", "quantity": 1, "unit_price": precio_final_ars, "currency_id": "ARS"}],
-            "external_reference": user_email, # 🔒 Atamos el pago al email de la sesión
+            "external_reference": user_email,
             "back_urls": {"success": "https://www.complianceflow.me/dashboard?tier=premium", "failure": "https://www.complianceflow.me/dashboard", "pending": "https://www.complianceflow.me/dashboard"},
             "auto_return": "approved"
         }
@@ -240,18 +243,15 @@ def crear_preferencia_premium(request: Request):
     except Exception as e: raise HTTPException(status_code=500, detail=str(e))
 
 
-# 🛡️ PUNTO 5 SOLUCIONADO: ENDPOINT DE WEBHOOK PARA RECIBIR NOTIFICACIONES DE MERCADOPAGO
 @router.post("/api/payments/webhook", tags=["Financiero"])
 async def webhook_mercadopago(request: Request):
     try:
         payload = await request.json()
-        # Evaluamos las notificaciones que envía MercadoPago al procesar un pago
         if payload.get("type") == "payment" or "data" in payload:
             payment_id = payload.get("data", {}).get("id") or payload.get("id")
             if payment_id:
                 token = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "").strip()
                 sdk = mercadopago.SDK(token)
-                # Consultamos de forma segura el estado directo a los servidores de MP
                 payment_info = sdk.payment().get(payment_id)
                 
                 if payment_info.get("status") == 200:
@@ -259,7 +259,6 @@ async def webhook_mercadopago(request: Request):
                     status_pago = response_data.get("status")
                     email_cliente = response_data.get("external_reference")
                     
-                    # Si el dinero ingresó de verdad, activamos en la base de datos
                     if status_pago == "approved" and email_cliente:
                         auth_handler.activar_premium(email_cliente)
                         return {"status": "success", "message": "Licencia activada de forma asíncrona segura."}
@@ -268,18 +267,14 @@ async def webhook_mercadopago(request: Request):
         registrar_evento(f"Fallo crítico procesando webhook de pagos: {str(e)}")
         return {"status": "error"}
 
-
-# 🛡️ ENDPOINT SEGURO DE VERIFICACIÓN DE LICENCIA (Para el Dashboard)
 @app.get("/api/user/status", tags=["Autenticación"])
 def verificar_licencia_segura(x_user_email: str = Header(None)):
     if not x_user_email: raise HTTPException(status_code=400, detail="Falta email en cabeceras.")
-    # Rompe el bypass: Consulta el estado inalterable en Postgres, no en la URL
     premium_real = auth_handler.verificar_premium(x_user_email)
     return {"email": x_user_email, "licencia_enterprise": premium_real or (x_user_email == "schulzeleandro77@gmail.com")}
 
-
 # =====================================================================
-# ⚙️ MOTOR DE ANÁLISIS ESTÁTICO DE ARCHIVOS REALES
+# ⚙️ MOTOR DE ANÁLISIS ESTÁTICO DE ARCHIVOS REALES (EXISTENTE)
 # =====================================================================
 def analizar_contenido_documento(contenido: str, norma_id: str) -> dict:
     info = DATA_ESTANDARES.get(norma_id, DATA_ESTANDARES["ISO-IAM"]).copy()
@@ -314,7 +309,7 @@ def analizar_contenido_documento(contenido: str, norma_id: str) -> dict:
         
     return info
 
-@app.post("/api/compliance/scan", tags=["Escáner"])
+@app.post("/api/compliance/scan", tags=["Escáner Estático"])
 async def ejecutar_escaneo_web(request: Request, norma_id: str = Form(...), file: UploadFile = File(...)):
     ip_cliente = obtener_ip_cliente(request)
     user_email = request.headers.get("X-User-Email")
@@ -358,7 +353,80 @@ async def ejecutar_escaneo_web(request: Request, norma_id: str = Form(...), file
     
     return FileResponse(path=archivo_pdf, media_type="application/pdf", filename=archivo_pdf, headers=headers)
 
-@app.get("/api/compliance/download", tags=["Escáner"])
+# =====================================================================
+# ⚙️ NUEVO MOTOR AUTOMATIZADO DE BASE DE DATOS
+# =====================================================================
+@app.post("/api/compliance/scan/database", tags=["Escáner Automatizado"])
+async def ejecutar_escaneo_db(request: Request, payload: DBScanRequest):
+    ip_cliente = obtener_ip_cliente(request)
+    user_email = request.headers.get("X-User-Email")
+    
+    # 1. Validación Freemium (Reutilizando tu lógica existente)
+    if user_email != "schulzeleandro77@gmail.com":
+        try:
+            with obtener_conexion_db() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT escaneos_realizados FROM control_ips WHERE ip = %s", (ip_cliente,))
+                    resultado = cursor.fetchone()
+                    if resultado and resultado[0] >= 3:
+                        raise HTTPException(status_code=402, detail="Límite freemium de 3 pruebas alcanzado.")
+        except HTTPException as he: raise he
+        except Exception as e: registrar_evento(f"Fallo de persistencia BD: {str(e)}")
+        
+    verificar_y_actualizar_limite_ip(ip_cliente, email=user_email)
+
+    # 2. Ejecutar Escáner Automatizado
+    scanner = ComplianceScanner()
+    reporte_db = scanner.escanear_base_datos(payload.db_url)
+    
+    # 3. Procesar resultados y adaptarlos a la estructura de PDF
+    brechas_criticas = [b for b in reporte_db.get("brechas", []) if b["prioridad"] in ["Alta", "Crítica"]]
+    
+    if "error" in reporte_db:
+        estado_final = "❌ ERROR DE CONEXIÓN"
+        detalle_final = reporte_db["error"]
+    elif brechas_criticas:
+        estado_final = "⚠️ OBSERVACIÓN DETECTADA"
+        errores_unidos = " | ".join([b["error"] for b in brechas_criticas])
+        detalle_final = f"Análisis Automatizado DB: Se detectaron {len(brechas_criticas)} vulnerabilidades críticas bloqueantes para SOC 2. Detalles: {errores_unidos}"
+    else:
+        estado_final = "🟢 100% CUMPLIDO"
+        detalle_final = "Análisis Automatizado DB: Conexión exitosa y segura. Las métricas estructurales inspeccionadas (Encriptación de contraseñas, SSL forzado y roles IAM) cumplen íntegramente con los controles técnicos de SOC 2."
+
+    info_dinamica = {
+        "norma": "SOC 2 Type II — CC6 (Protección de Base de Datos)",
+        "titulo": "Auditoría Técnica Automatizada",
+        "evidencia_id": payload.norma_id,
+        "estado": estado_final,
+        "detalle": detalle_final
+    }
+    
+    global DATA_ESTANDARES
+    DATA_ESTANDARES[payload.norma_id] = info_dinamica
+    
+    datos_reporte = {
+        "id": payload.norma_id, 
+        "norma": info_dinamica["norma"], 
+        "titulo": info_dinamica["titulo"],
+        "evidencia_id": info_dinamica["evidencia_id"], 
+        "estado": info_dinamica["estado"], 
+        "detalle": info_dinamica["detalle"]
+    }
+    
+    # 4. Generación y respuesta del PDF idéntico a tu flujo actual
+    reporter = ReportGenerator(cliente_nombre="Auditoría Automatizada de Infraestructura")
+    archivo_pdf = reporter.generar_pdf_cumplimiento(datos_reporte)
+    
+    headers = {
+        "X-Status-Compliance": "observacion" if "OBSERVACIÓN" in info_dinamica["estado"] or "ERROR" in info_dinamica["estado"] else "aprobado",
+        "Access-Control-Expose-Headers": "X-Status-Compliance"
+    }
+    
+    return FileResponse(path=archivo_pdf, media_type="application/pdf", filename=archivo_pdf, headers=headers)
+
+# =====================================================================
+
+@app.get("/api/compliance/download", tags=["Escáner Estático"])
 def descargar_evidencia_unificada(format: str, id: str, active: bool = False):
     if not active: raise HTTPException(status_code=402, detail="Descarga bloqueada.")
     
@@ -372,7 +440,6 @@ def descargar_evidencia_unificada(format: str, id: str, active: bool = False):
         
     elif format == "word":
         doc = Document()
-        # ⚙️ CAMBIO: Lenguaje orientado a diagnóstico preliminar
         titulo = doc.add_heading('COMPLIANCEFLOW - REPORTE DE DIAGNÓSTICO PRELIMINAR', 0)
         titulo.alignment = 1 
         doc.add_paragraph("==========================================================================")
@@ -399,16 +466,13 @@ def descargar_evidencia_unificada(format: str, id: str, active: bool = False):
         doc.add_paragraph("\n==========================================================================")
         
         footer = doc.add_paragraph()
-        # ⚙️ CAMBIO: Aviso legal explícito de que no es una certificación oficial
         footer.add_run('Aviso Legal: ').bold = True
         footer.add_run('Este documento es una guía técnica predictiva generada por IA. No constituye una certificación oficial ni reemplaza el veredicto de un auditor externo.')
         
-        # ⚙️ Guardado en memoria RAM (io.BytesIO) para evitar errores de escritura en Railway
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
         
-        # ⚙️ CAMBIO: Nombre de archivo ajustado a "diagnostico preliminar"
         filename = f"diagnostico_{id}_preliminar.docx"
         headers = {'Content-Disposition': f'attachment; filename="{filename}"'}
         return StreamingResponse(buffer, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers=headers)
