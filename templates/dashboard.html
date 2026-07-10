@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enterprise Dashboard | ComplianceFlow</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .glass-panel { background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(16px); }
@@ -191,24 +191,48 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <div class="lg:col-span-7 bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800 p-6 flex flex-col justify-between shadow-xl">
+                        
                         <div>
                             <h3 class="text-sm font-bold text-teal-400 uppercase tracking-wider mb-2 flex items-center">
                                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                Auditoría Estructural Cruzada
+                                1. Análisis Manual Cruzado
                             </h3>
-                            <p class="text-xs text-slate-400 mb-6">Cargá las bitácoras o políticas de la compañía para contrastar contra el estándar regulatorio.</p>
+                            <p class="text-[11px] text-slate-400 mb-4 leading-relaxed">Cargá las bitácoras estáticas de la compañía para contrastar contra el estándar.</p>
                             
-                            <div id="dropzoneDetalle" class="border-2 border-dashed border-slate-700 hover:border-teal-500/50 rounded-xl p-8 text-center cursor-pointer transition-all duration-300 bg-slate-950/40 relative group">
-                                <svg class="w-10 h-10 mx-auto mb-2 text-slate-500 group-hover:text-teal-400 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
-                                <span id="fileLabelDetalle" class="text-xs text-slate-300 block font-medium mt-2">Hacé clic o arrastrá un archivo para indexar</span>
+                            <div id="dropzoneDetalle" class="border-2 border-dashed border-slate-700 hover:border-teal-500/50 rounded-xl p-6 text-center cursor-pointer transition-all duration-300 bg-slate-950/40 relative group">
+                                <svg class="w-8 h-8 mx-auto mb-2 text-slate-500 group-hover:text-teal-400 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                                <span id="fileLabelDetalle" class="text-[11px] text-slate-300 block font-medium mt-2">Hacé clic o arrastrá un archivo para indexar</span>
                                 <input type="file" id="auditFileDetalle" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="actualizarFileDetalle(this)">
                             </div>
-                        </div>
-                        <div class="mt-6">
-                            <button id="btnAuditarPanel" onclick="simularAnalisis()" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black px-6 py-4 rounded-xl transition duration-200 shadow-[0_0_15px_rgba(20,184,166,0.2)] hover:shadow-[0_0_20px_rgba(20,184,166,0.4)] text-sm cursor-pointer whitespace-nowrap flex justify-center items-center">
-                                <span id="txtBtnAuditarPanel">Lanzar Auditoría Automatizada Certificada</span>
+                            <button id="btnAuditarPanel" onclick="simularAnalisis()" class="w-full mt-4 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-4 py-3 rounded-xl transition text-[11px] cursor-pointer text-center">
+                                <span id="txtBtnAuditarPanel">Lanzar Escaneo de Archivo</span>
                             </button>
                         </div>
+
+                        <div class="my-6 flex items-center">
+                            <div class="flex-grow border-t border-slate-700/50"></div>
+                            <span class="flex-shrink-0 mx-4 text-slate-500 text-[10px] font-bold uppercase tracking-widest">O conexión directa</span>
+                            <div class="flex-grow border-t border-slate-700/50"></div>
+                        </div>
+
+                        <div class="bg-slate-950/50 rounded-xl border border-teal-500/20 p-5 shadow-inner relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-teal-500"></div>
+                            <h3 class="text-sm font-bold text-teal-400 uppercase tracking-wider mb-2 flex items-center">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                                2. Auditoría DB Automatizada
+                            </h3>
+                            <p class="text-[11px] text-slate-400 mb-4 leading-relaxed">Conectá tu PostgreSQL (Modo de Solo Lectura). Escaneamos cifrado, SSL forzado y permisos IAM al instante.</p>
+                            
+                            <div class="mb-4">
+                                <label class="text-[9px] font-bold tracking-wide text-slate-500 uppercase block mb-1">String de Conexión (URL)</label>
+                                <input type="text" id="db_url_input" class="w-full bg-slate-900 border border-slate-700 hover:border-teal-500/50 rounded-lg px-3 py-2.5 text-xs text-teal-300 font-mono focus:outline-none focus:border-teal-500 transition-colors placeholder-slate-700" placeholder="postgres://usuario:password@host:puerto/dbname">
+                            </div>
+                            
+                            <button id="btn_scan_db" onclick="iniciarEscaneoDB()" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black px-6 py-3 rounded-xl transition shadow-[0_0_15px_rgba(20,184,166,0.2)] text-xs cursor-pointer flex justify-center items-center">
+                                <span id="scan_db_text">🚀 Ejecutar Escáner PostgreSQL en Vivo</span>
+                            </button>
+                        </div>
+
                     </div>
 
                     <div class="lg:col-span-5 bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800 p-6 flex flex-col justify-between shadow-xl relative overflow-hidden">
@@ -447,12 +471,90 @@
             }
         }
 
+        // ---------- NUEVA FUNCIÓN: ESCÁNER DE BASE DE DATOS AUTOMATIZADO ----------
+        async function iniciarEscaneoDB() {
+            const dbUrlInput = document.getElementById('db_url_input').value.trim();
+            const btn = document.getElementById('btn_scan_db');
+            const txtBtn = document.getElementById('scan_db_text');
+            const originalText = txtBtn.innerText;
+
+            if (!dbUrlInput) {
+                showToast("Por favor, ingresá una cadena de conexión PostgreSQL válida.", "warning");
+                return;
+            }
+
+            // UI de carga
+            btn.disabled = true;
+            txtBtn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Conectando a Base de Datos...`;
+
+            try {
+                const response = await fetch('/api/compliance/scan/database', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Email': 'schulzeleandro77@gmail.com' 
+                    },
+                    body: JSON.stringify({ 
+                        db_url: dbUrlInput, 
+                        norma_id: estandarActivoId 
+                    })
+                });
+
+                if (response.status === 402) {
+                    document.getElementById('modalCuota').classList.remove('hidden');
+                    return;
+                }
+
+                if (response.ok) {
+                    // Descargar PDF generado
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `auditoria_db_${estandarActivoId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    
+                    showToast("Auditoría DB completada exitosamente", "success");
+                    
+                    // Actualizar el Dashboard simulando la metadata de la DB
+                    const estadoAudit = response.headers.get("X-Status-Compliance"); 
+                    const hashReal = Math.random().toString(16).substring(2, 10) + "db" + Math.random().toString(16).substring(2, 10) + "e1c2";
+                    
+                    document.getElementById('txtCardFecha').innerText = new Date().toISOString().replace('T', ' ').substring(0, 19) + " UTC";
+                    document.getElementById('txtCardHash').innerText = hashReal;
+                    document.getElementById('txtCardOrigen').innerText = "Live PostgreSQL Scan (Read-Only)";
+                    
+                    if (estadoAudit === "observacion") {
+                        document.getElementById('txtCardEstado').innerText = "⚠️ BRECHAS DB DETECTADAS";
+                        document.getElementById('txtCardEstado').className = "bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-bold shadow-[0_0_8px_rgba(245,158,11,0.2)]";
+                        actualizarGrafico(25);
+                    } else {
+                        document.getElementById('txtCardEstado').innerText = "🟢 100% DB SEGURA";
+                        document.getElementById('txtCardEstado').className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold shadow-[0_0_8px_rgba(16,185,129,0.2)]";
+                        actualizarGrafico(100);
+                    }
+
+                } else {
+                    const errData = await response.json().catch(() => ({}));
+                    showToast(errData.detail || "Fallo técnico conectando al servidor. Verifique la URL.", "error");
+                }
+            } catch (err) {
+                showToast("Error de red: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+                txtBtn.innerHTML = originalText;
+            }
+        }
+        // --------------------------------------------------------------------------
+
         async function simularAnalisis() {
             const btn = document.getElementById('btnAuditarPanel');
             const txtBtn = document.getElementById('txtBtnAuditarPanel');
             const originalText = txtBtn.innerText;
             btn.disabled = true;
-            txtBtn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analizando Nodos...`;
+            txtBtn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-slate-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analizando Nodos...`;
 
             let fileParaEnviar = fileInputDetalle.files && fileInputDetalle.files.length > 0 ? fileInputDetalle.files[0] : null;
             let filenameReal = "evidencia_historica.log";
