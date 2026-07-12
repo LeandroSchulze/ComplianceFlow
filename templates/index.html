@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ComplianceFlow | AI Compliance Auditor</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>ComplianceFlow | Automated Compliance Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .cyber-grid {
             background-size: 40px 40px;
@@ -23,7 +23,7 @@
     <div class="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
     <div class="absolute top-40 left-1/3 w-[300px] h-[300px] bg-cyan-500/5 rounded-full blur-[80px] pointer-events-none z-0"></div>
 
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3"></div>
 
     <div class="relative z-10 flex flex-col min-h-screen justify-between">
         
@@ -35,58 +35,54 @@
                     </div>
                     <h1 class="text-base font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400">COMPLIANCEFLOW</h1>
                 </div>
-                <a href="/login" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/80 px-5 py-2.5 rounded-xl text-xs font-bold transition duration-200 shadow-md">Iniciar Sesión</a>
+                <a href="/login" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/80 px-5 py-2.5 rounded-xl text-xs font-bold transition duration-200 shadow-md">Ir al Dashboard</a>
             </div>
         </nav>
 
-        <main class="max-w-4xl mx-auto text-center mt-16 px-4 flex-grow flex flex-col items-center">
+        <main class="max-w-4xl mx-auto text-center mt-12 px-4 flex-grow flex flex-col items-center">
             
             <div class="inline-flex items-center space-x-2 bg-teal-500/10 border border-teal-500/20 rounded-full px-4 py-1.5 mb-6">
                 <span class="flex h-1.5 w-1.5 relative">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-500"></span>
                 </span>
-                <span class="text-[10px] font-mono font-bold text-teal-400 uppercase tracking-widest">Ecosistema Enterprise Certificado</span>
+                <span class="text-[10px] font-mono font-bold text-teal-400 uppercase tracking-widest">Motor de Ingesta Activo</span>
             </div>
 
             <h2 class="text-4xl md:text-6xl font-black tracking-tight text-slate-100 mb-6 leading-tight">
-                Detectá errores y brechas en tus <br/> evidencias de auditoría <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500">al instante</span>
+                Auditoría Técnica de SOC 2 e ISO 27001 <br/> <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500">Automatizada en Segundos</span>
             </h2>
-            <p class="text-slate-400 text-base max-w-2xl mx-auto mb-12 leading-relaxed">
-                Pasá tus certificaciones de forma ágil. Subí tus archivos técnicos de infraestructura o gobernanza y obtené un análisis de brechas instantáneo respaldado por IA.
+            <p class="text-slate-400 text-sm max-w-2xl mx-auto mb-10 leading-relaxed">
+                Olvidate de los chequeos manuales. Conectá tu base de datos PostgreSQL en modo lectura y detectá brechas críticas (SSL, Encriptación, IAM) para cumplir con SOC 2, ISO 27001, SOC 1 e ISO 9001 antes de que llegue el auditor oficial.
             </p>
 
-            <div class="glass-card p-8 rounded-[2rem] w-full max-w-md mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-800/80 text-left hover:border-slate-700/60 transition-colors duration-300">
-                <h3 class="text-sm font-bold text-teal-400 uppercase tracking-wider mb-2 flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                    Escáner Gratuito
-                </h3>
-                <p class="text-[11px] text-slate-400 mb-6 leading-relaxed">Cargá un archivo de configuración, políticas o logs de tu sistema para verificar su alineación regulatoria.</p>
+            <div class="glass-card p-8 rounded-[2rem] w-full max-w-md mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-800/80 text-left hover:border-teal-900/50 transition-colors duration-300 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-2xl pointer-events-none"></div>
                 
-                <form id="scanForm" class="space-y-5">
+                <h3 class="text-sm font-bold text-teal-400 uppercase tracking-wider mb-2 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                    Escáner de Infraestructura
+                </h3>
+                
+                <!-- BADGE DE SEGURIDAD (CERO RIESGO) -->
+                <div class="bg-emerald-950/30 border border-emerald-500/20 rounded-lg p-3 mb-6 flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-emerald-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                     <div>
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-2">Reglamentación a Auditar</label>
-                        <select id="normaId" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 text-slate-300 focus:outline-none focus:border-teal-500 text-xs transition-colors cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%209l3%203%203-3%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.0rem] bg-[right_0.75rem_center] bg-no-repeat">
-                            <option value="ISO-IAM">ISO 27001 (Control de Accesos)</option>
-                            <option value="SOC2-S3">SOC 2 Type II (Seguridad en Nube)</option>
-                            <option value="SOC1-FIN">SOC 1 ICFR (Matriz Financiera)</option>
-                            <option value="ISO-9001">ISO 9001 (Requisitos de Calidad)</option>
-                        </select>
+                        <p class="text-xs font-bold text-emerald-400 uppercase tracking-wide">Cero Riesgo: Solo Lectura</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">El motor ejecuta una sesión <code>readonly=True</code>. No almacenamos credenciales ni alteramos datos.</p>
                     </div>
-
+                </div>
+                
+                <form id="scanForm" class="space-y-5 relative z-10">
                     <div>
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-2">Documento o Log de Sistema</label>
-                        <div id="dropzone" class="relative border-2 border-dashed border-slate-700 hover:border-teal-500/50 rounded-xl p-6 bg-slate-950/30 text-center cursor-pointer transition-all duration-300 group">
-                            <input type="file" id="auditFile" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="actualizarNombreArchivo(this)">
-                            <div class="space-y-2 transform group-hover:scale-105 transition-transform duration-300">
-                                <svg class="w-8 h-8 mx-auto text-slate-600 group-hover:text-teal-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                                <p id="fileLabel" class="text-xs text-slate-400 font-medium group-hover:text-slate-300">Hacé clic o arrastrá un archivo acá<br><span class="text-[10px] text-slate-500">(.txt, .log, .json)</span></p>
-                            </div>
-                        </div>
+                        <label class="block text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-2">String de Conexión PostgreSQL</label>
+                        <input type="text" id="dbUrlInput" required 
+                               class="w-full bg-slate-950/80 border border-slate-700 hover:border-teal-500/50 rounded-xl px-4 py-3 text-xs text-teal-300 font-mono focus:outline-none focus:border-teal-500 transition-colors placeholder-slate-600 shadow-inner" 
+                               placeholder="postgres://usuario:password@host:puerto/dbname">
                     </div>
 
                     <button type="submit" id="btnScan" class="w-full bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 font-black p-4 rounded-xl transition duration-200 text-xs uppercase tracking-wider cursor-pointer mt-4 flex items-center justify-center shadow-[0_0_20px_rgba(20,184,166,0.2)]">
-                        <span id="btnText">Escanear y Descargar Reporte</span>
+                        <span id="btnText">Ejecutar Chequeo Gratuito</span>
                     </button>
                 </form>
 
@@ -94,19 +90,18 @@
             </div>
 
             <div class="w-full border-t border-slate-800/60 pt-8 mt-12 mb-8">
-                <p class="text-[10px] font-mono font-bold tracking-widest text-slate-500 uppercase mb-5">Soporte Técnico de Marcos Internacionales</p>
+                <p class="text-[10px] font-mono font-bold tracking-widest text-slate-500 uppercase mb-5">Controles Técnicos Soportados</p>
                 <div class="flex flex-wrap justify-center items-center gap-4 sm:gap-6 text-[11px] text-slate-400 font-mono font-bold">
-                    <span class="bg-slate-900/60 px-3.5 py-2 rounded-lg border border-slate-800 hover:text-teal-400 hover:border-teal-900/50 transition-all cursor-default">🔒 ISO 27001</span>
-                    <span class="bg-slate-900/60 px-3.5 py-2 rounded-lg border border-slate-800 hover:text-cyan-400 hover:border-cyan-900/50 transition-all cursor-default">☁️ SOC 2 TYPE II</span>
-                    <span class="bg-slate-900/60 px-3.5 py-2 rounded-lg border border-slate-800 hover:text-amber-400 hover:border-amber-900/50 transition-all cursor-default">📊 SOC 1 ICFR</span>
-                    <span class="bg-slate-900/60 px-3.5 py-2 rounded-lg border border-slate-800 hover:text-purple-400 hover:border-purple-900/50 transition-all cursor-default">🧬 ISO 9001</span>
+                    <span class="bg-slate-900/60 px-3.5 py-2 rounded-lg border border-slate-800 hover:text-teal-400 hover:border-teal-900/50 transition-all cursor-default">🔐 SOC 2: CC6.1 (Auth)</span>
+                    <span class="bg-slate-900/60 px-3.5 py-2 rounded-lg border border-slate-800 hover:text-cyan-400 hover:border-cyan-900/50 transition-all cursor-default">🌐 SOC 2: CC6.6 (SSL)</span>
+                    <span class="bg-slate-900/60 px-3.5 py-2 rounded-lg border border-slate-800 hover:text-amber-400 hover:border-amber-900/50 transition-all cursor-default">🛡️ SOC 2: CC6.3 (Access Grants)</span>
                 </div>
             </div>
 
         </main>
 
         <footer class="text-center py-6 text-xs text-slate-500 border-t border-slate-800/60 bg-slate-900/40 backdrop-blur-md w-full">
-            © 2026 ComplianceFlow. Ecosistema de control y trazas automatizadas.
+            © 2026 ComplianceFlow. Motor Inbound de Ingeniería.
         </footer>
     </div>
 
@@ -128,69 +123,35 @@
             }, 3500);
         }
 
-        // LÓGICA DE DROPZONE VIVA
-        const dropzone = document.getElementById('dropzone');
-        const fileInput = document.getElementById('auditFile');
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, preventDefaults, false);
-        });
-        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropzone.addEventListener(eventName, () => {
-                dropzone.classList.add('border-teal-500/50', 'bg-teal-950/30');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropzone.addEventListener(eventName, () => {
-                dropzone.classList.remove('border-teal-500/50', 'bg-teal-950/30');
-            }, false);
-        });
-
-        dropzone.addEventListener('drop', (e) => {
-            fileInput.files = e.dataTransfer.files;
-            actualizarNombreArchivo(fileInput);
-        });
-
-        function actualizarNombreArchivo(input) {
-            const label = document.getElementById('fileLabel');
-            if (input.files && input.files.length > 0) {
-                label.innerHTML = `📄 <span class="text-teal-400 font-bold font-mono text-sm">${input.files[0].name}</span><br><span class="text-[10px] text-teal-500/70 mt-1 block">Listo para analizar</span>`;
-                dropzone.classList.add('border-teal-500/50', 'bg-teal-950/30', 'shadow-[0_0_15px_rgba(20,184,166,0.1)]');
-            } else {
-                label.innerHTML = "Hacé clic o arrastrá un archivo acá<br><span class="text-[10px] text-slate-500">(.txt, .log, .json)</span>";
-                dropzone.classList.remove('border-teal-500/50', 'bg-teal-950/30', 'shadow-[0_0_15px_rgba(20,184,166,0.1)]');
-            }
-        }
-
+        // LÓGICA DEL ESCÁNER DE BASE DE DATOS
         document.getElementById('scanForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const norma = document.getElementById('normaId').value;
+            const dbUrl = document.getElementById('dbUrlInput').value.trim();
             const btn = document.getElementById('btnScan');
             const btnText = document.getElementById('btnText');
             const status = document.getElementById('statusMsg');
 
-            if (!fileInput.files || fileInput.files.length === 0) return;
-            const fileName = fileInput.files[0].name;
+            if (!dbUrl) return;
 
             // ANIMACIÓN DE CARGA EN BOTÓN
             btn.disabled = true;
             const originalText = btnText.innerText;
-            btnText.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-slate-900 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Procesando Cifrado...`;
+            btnText.innerHTML = `<svg class="animate-spin h-4 w-4 mr-2 text-slate-900 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Auditando Infraestructura...`;
             
             status.classList.add('hidden');
 
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('norma_id', norma);
-
             try {
-                const response = await fetch('/api/compliance/scan', {
+                // Pegándole al nuevo endpoint automatizado de main.py
+                const response = await fetch('/api/compliance/scan/database', {
                     method: 'POST',
-                    headers: { 'X-User-Email': 'schulzeleandro77@gmail.com' },
-                    body: formData
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Email': 'invitado@complianceflow.me' // Mail por defecto para no registrados
+                    },
+                    body: JSON.stringify({
+                        db_url: dbUrl,
+                        norma_id: 'SOC2-DB-AUTO'
+                    })
                  });
 
                 if (response.status === 402) {
@@ -198,8 +159,8 @@
                     status.className = "mt-6 p-5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-center text-rose-300 space-y-3 backdrop-blur-sm shadow-inner";
                     status.innerHTML = `
                         <p class="font-bold text-sm">⚠️ Cuota Freemium Agotada (3/3)</p>
-                        <p class="text-slate-400 text-[11px] leading-relaxed">Para auditar documentos sin restricciones y desbloquear la IA, activá tu licencia.</p>
-                        <a href="/login" class="inline-block mt-2 w-full bg-slate-800 text-slate-200 border border-slate-700 hover:border-slate-500 font-bold py-3 rounded-lg text-center transition-all shadow-md">Registrarse y Elegir Plan 🚀</a>
+                        <p class="text-slate-400 text-[11px] leading-relaxed">Alcanzaste el límite de consultas para esta IP.</p>
+                        <a href="/login" class="inline-block mt-2 w-full bg-slate-800 text-slate-200 border border-slate-700 hover:border-slate-500 font-bold py-3 rounded-lg text-center transition-all shadow-md">Ir al Dashboard Premium 🚀</a>
                     `;
                     showToast("Límite de uso freemium alcanzado.", "error");
                     return;
@@ -209,18 +170,28 @@
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
+                    
+                    // Chequeo rápido de headers para saber si hubo errores o fue exitoso
+                    const statusCompliance = response.headers.get("X-Status-Compliance"); 
+                    let downloadName = "auditoria_db_aprobada.pdf";
+                    if(statusCompliance === "observacion") {
+                        downloadName = "auditoria_db_vulnerabilidades.pdf";
+                        showToast("Se detectaron brechas. Descargando reporte detallado...", "warning");
+                    } else {
+                        showToast("Conexión segura. Reporte oficial descargado.", "success");
+                    }
+
                     a.href = url;
-                    a.download = `auditoria_${norma.toLowerCase()}_${fileName.split('.')[0]}.pdf`;
+                    a.download = downloadName;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
-                    showToast("Reporte oficial descargado exitosamente", "success");
                 } else {
-                    const err = await response.json();
-                    showToast(err.detail || 'Fallo al procesar el archivo', "error");
+                    const err = await response.json().catch(() => ({}));
+                    showToast(err.detail || 'Fallo de conexión. Verifique la URL de la base de datos.', "error");
                 }
             } catch (error) {
-                showToast("Error de red en conexión con el servidor.", "error");
+                showToast("Error de red en conexión con el motor.", "error");
             } finally {
                 btn.disabled = false;
                 btnText.innerHTML = originalText;
